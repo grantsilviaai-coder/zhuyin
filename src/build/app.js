@@ -559,10 +559,10 @@ async function loadReport(){
     $('tErr').textContent='';
     $('tLogin').hidden=true; $('tMain').hidden=false;
     tClassNames = d.classes || {};
+    await loadClassesT();          // 先讀好班級清單，「分到班級」選單才會出現
     renderReport(d);
     renderRec(); loadRecList().then(renderRec);
     loadDiag();
-    loadClassesT();
     loadTeacherWords();
   }catch(e){
     $('tErr').textContent='連不上後台，請確認網路，或確認後台部署時「誰可以存取」選了「所有人」。';
