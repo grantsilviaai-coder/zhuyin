@@ -101,7 +101,8 @@ function allItems(){
   customItems().forEach(i=>map.set(i.w,i));
   return [...map.values()];
 }
-function pool(){
+function pool(){ return poolAll().filter(it=>!TEST_WORDS.has(it.w)); }
+function poolAll(){
   const cls = classItems();
   if(state.onlyClass && cls.length>=4) return cls;
   const mine = customItems();
@@ -292,7 +293,7 @@ function buildRound(mode){
 
 // ======== 畫面 ========
 const $ = id=>document.getElementById(id);
-const screens = ['pickClass','login','home','quiz','result','parent','teacher'];
+const screens = ['pickClass','login','home','quiz','result','parent','teacher','testIntro','testQuiz','testDone'];
 function show(name){
   screens.forEach(s=>$(s).hidden = s!==name);
   const studentView = name!=='teacher' && name!=='login' && name!=='pickClass';
@@ -312,7 +313,14 @@ function renderClassLine(){
   el.innerHTML = `班級：<b>${esc(className||'讀取中…')}</b> <button type="button" class="linkbtn" id="notMyClass">不是這一班？</button>`;
   $('notMyClass').addEventListener('click',()=>{ setClass('',''); student=null; store.set('student',null); goHome(); });
 }
-function onClassWords(){ renderClassLine(); if(!$('home').hidden) refreshHome(); }
+const GO_TEST = new URLSearchParams(location.search).get('go')==='test';
+let goTestUsed = false;
+function onClassWords(d){
+  if(d && d.diagPhase){ diagPhase = d.diagPhase; store.set('diagPhase', diagPhase); }
+  renderClassLine();
+  if(!$('home').hidden) refreshHome();
+  if(GO_TEST && !goTestUsed && student && !$('home').hidden && diagPhase!=='關閉'){ goTestUsed = true; openTestIntro(); }
+}
 
 function refreshHome(){
   $('starCount').textContent = state.stars;
@@ -324,6 +332,7 @@ function refreshHome(){
   $('customInfo').textContent = c ? `這台已加入 ${c} 個詞${state.onlyMine&&c>=4?'（目前只練這些）':''}` : '只會出現在這台 iPad';
   const cls = classItems().length;
   const nb = $('classNotice');
+  refreshTestCard();
   if(cls){ nb.hidden=false; nb.textContent = state.onlyClass&&cls>=4 ? `老師指定了 ${cls} 個本週字詞，今天的題目都會從這些詞出。` : `老師加了 ${cls} 個本週字詞，會混在題目裡出現。`; }
   else nb.hidden=true;
 }
@@ -466,6 +475,7 @@ $('loginForm').addEventListener('submit',e=>{
   store.set('student', student);
   loadStudentState();
   show('home');
+  if(GO_TEST && !goTestUsed && HAS_BACKEND && diagPhase!=='關閉'){ goTestUsed = true; openTestIntro(); }
 });
 $('switchBtn').addEventListener('click',()=>{
   student = null; store.set('student', null);
@@ -566,7 +576,17 @@ let tClassNames = {};
 let tClassList = [];
 const isOneClass = ()=> tClass!=='all' && tClass!=='_none';
 const clsLabel = id => id ? (tClassNames[id] || '（已刪除的班級）') : '未分班';
-const nameCell = s => `<td style="white-space:nowrap">${esc(s.name)}${tClass==='all'?`<div class="cls-tag">${esc(clsLabel(s.c))}</div>`:''}</td>`;
+const moveCtl = s => (!s.c && tClassList.length) ? `<div class="move-ctl" data-name="${esc(s.name)}"><select aria-label="把 ${esc(s.name)} 分到哪一班"><option value="">分到班級…</option>${tClassList.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select><button class="btn light" data-act="move">分過去</button></div>` : '';
+const nameCell = s => `<td style="white-space:nowrap">${esc(s.name)}${tClass==='all'?`<div class="cls-tag">${esc(clsLabel(s.c))}</div>`:''}${moveCtl(s)}</td>`;
+// 「分到班級」：把未分班學生的所有紀錄移到選好的班級
+document.addEventListener('click', async e=>{
+  const b = e.target.closest('.move-ctl button[data-act=move]'); if(!b) return;
+  const box = b.closest('.move-ctl'), to = box.querySelector('select').value, name = box.dataset.name;
+  if(!to){ box.querySelector('select').focus(); return; }
+  b.disabled = true; b.textContent = '移動中…';
+  try{ await postJSON({action:'moveStudent', key:tKey, name, from:'', to}); await new Promise(r=>setTimeout(r,1500)); loadReport(); }
+  catch(err){ b.disabled = false; b.textContent = '分過去'; $('tErr').textContent = '移動失敗，請確認網路後再試一次'; }
+});
 async function loadClassesT(){
   try{ tClassList = await fetchClasses(); }catch(e){ return; }
   tClassList.forEach(c=>{ tClassNames[c.id]=c.name; });
@@ -579,7 +599,6 @@ async function loadClassesT(){
 $('tClass').addEventListener('change',()=>{ tClass=$('tClass').value; try{ sessionStorage.setItem('zyx-tclass', tClass); }catch(e){} loadReport(); });
 
 const XQ_URL = location.origin + location.pathname;
-const DIAG_URL = 'https://jazzy-trifle-9635da.netlify.app/';
 function qrSVG(text){
   const q = new QRLib.QRCode(-1, QRLib.L.M); q.addData(text); q.make();
   const n = q.getModuleCount(), pad = 4; let d='';
@@ -641,15 +660,14 @@ $('classMgr').addEventListener('click',async e=>{
 });
 function showQR(id){
   const c = tClassList.find(x=>x.id===id); if(!c) return;
-  const u1 = XQ_URL + '#c-' + id, u2 = DIAG_URL + '#c-' + id;
+  const u1 = XQ_URL + '#c-' + id;
   $('qrView').hidden = false;
   $('qrView').innerHTML = `<div class="qr-sheet" id="qrSheet">
       <h3>${esc(c.name)}</h3>
       <div class="qr-pair">
-        <figure><div class="qr-box">${qrSVG(u1)}</div><figcaption><b>注音小學堂</b><span>每天練習</span></figcaption></figure>
-        <figure><div class="qr-box diag">${qrSVG(u2)}</div><figcaption><b>注音診斷站</b><span>前測・後測（老師說可以再做）</span></figcaption></figure>
+        <figure><div class="qr-box big">${qrSVG(u1)}</div><figcaption><b>注音小學堂</b><span>練習・前測・後測都在這裡</span></figcaption></figure>
       </div>
-      <p class="qr-note">用 iPad 相機掃描，輸入名字就能開始。兩個網站的名字要寫一樣。</p>
+      <p class="qr-note">用 iPad 相機掃描，輸入自己的名字就能開始。</p>
     </div>
     <div class="actions no-print"><button class="btn" id="printQR">列印這一班的 QR Code</button><button class="btn light" id="closeQR">關閉</button></div>`;
   $('printQR').addEventListener('click',()=>{ document.body.classList.add('print-qr'); try{ window.print(); }catch(e){} setTimeout(()=>document.body.classList.remove('print-qr'),500); });
@@ -710,9 +728,11 @@ let recActive = null;  // {w, mr, stream, timer}
 function hasLight(it){ return it.syl.some(s=>s.t===5); }
 function renderRec(){
   const only = $('recOnlyLight').checked;
-  const items = allItems().filter(it=>!only || hasLight(it));
+  const listen = LISTEN_ITEMS.map(x=>x.item);
+  const items = listen.concat(allItems().filter(it=>!TEST_WORDS.has(it.w) && (!only || hasLight(it))));
   const done = items.filter(it=>recWords.has(it.w)).length;
-  $('recCount').textContent = `已錄 ${done} / ${items.length} 個詞`;
+  const ld = listen.filter(it=>recWords.has(it.w)).length;
+  $('recCount').textContent = `聽音題已錄 ${ld} / ${listen.length}　全部已錄 ${done} / ${items.length}`;
   $('recList').innerHTML = items.map(it=>{
     const st = recState[it.w] || {phase:'idle'};
     const has = recWords.has(it.w);
@@ -721,14 +741,15 @@ function renderRec(){
     else if(st.phase==='review') btns = `<button class="btn" data-act="save">儲存</button><button class="btn light" data-act="preview">再聽一次</button><button class="btn light" data-act="rec">重錄</button>`;
     else if(st.phase==='saving') btns = `<span class="hint">儲存中…</span>`;
     else btns = `<button class="btn light" data-act="rec">${has?'重新錄音':'錄音'}</button>${has?`<button class="btn light" data-act="play">播放</button><button class="btn light danger" data-act="del">刪除</button>`:''}`;
-    return `<div class="rec-row" data-w="${esc(it.w)}"><div class="rec-word">${miniWord(it.w, zyStr(it.syl))}</div><span class="pill ${has?'on':''}">${has?'已錄音':'未錄音'}</span><div class="rec-btns">${btns}</div></div>`;
+    const lt = LISTEN_ITEMS.find(x=>x.item.w===it.w);
+    return `<div class="rec-row${lt?' listen-row-rec':''}" data-w="${esc(it.w)}"><div class="rec-word">${miniWord(it.w, zyStr(it.syl))}${lt?`<small class="must-tag">${lt.form==='A'?'前測':'後測'}聽音題・一定要錄</small>`:''}</div><span class="pill ${has?'on':''}">${has?'已錄音':'未錄音'}</span><div class="rec-btns">${btns}</div></div>`;
   }).join('') || '<span class="hint">沒有符合的詞</span>';
 }
 $('recOnlyLight').addEventListener('change',renderRec);
 
 // ---- 診斷報告 ----
-const SKILLS = ['拼讀','認讀','一聲','二聲','三聲','四聲','輕聲','ㄓㄗ','ㄔㄘ','ㄕㄙ','ㄣㄥ','ㄢㄤ','ㄋㄌ','ㄈㄏ'];
-const SKILL_GROUP = {'拼讀':'整體','認讀':'整體','一聲':'聲調','二聲':'聲調','三聲':'聲調','四聲':'聲調','輕聲':'聲調'};
+const SKILLS = ['拼讀','認讀','一聲','二聲','三聲','四聲','輕聲','ㄓㄗ','ㄔㄘ','ㄕㄙ','ㄣㄥ','ㄢㄤ','ㄋㄌ','ㄈㄏ','聽ㄓㄗ','聽ㄔㄘ','聽ㄕㄙ','聽ㄣㄥ'];
+const SKILL_GROUP = {'拼讀':'整體','認讀':'整體','一聲':'聲調','二聲':'聲調','三聲':'聲調','四聲':'聲調','輕聲':'聲調','聽ㄓㄗ':'聽音辨別','聽ㄔㄘ':'聽音辨別','聽ㄕㄙ':'聽音辨別','聽ㄣㄥ':'聽音辨別'};
 async function loadDiag(){
   $('diagErr').textContent='';
   try{
@@ -850,7 +871,4 @@ $('againBtn').addEventListener('click',()=>startRound(lastMode==='review'&&!stat
 $('rReviewBtn').addEventListener('click',()=>startRound('review'));
 $('parentBtn').addEventListener('click',()=>{ show('parent'); renderMine(); });
 $('parentBack').addEventListener('click',goHome);
-if(location.hash==='#teacher') openTeacher(); else goHome();
-loadClassWords();
-loadRecList();
-flushPending();
+

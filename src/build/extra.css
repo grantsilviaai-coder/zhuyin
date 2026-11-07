@@ -141,3 +141,25 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
   body.print-qr #qrSheet, body.print-qr #qrSheet *{visibility:visible}
   body.print-qr #qrSheet{position:absolute;left:0;top:0;width:100%;border:0}
 }
+
+/* 前後測（合併在首頁） */
+.phase-tag{display:inline-block;background:#0f766e;color:#fff;font-weight:700;border-radius:8px;padding:2px 12px;font-size:16px}
+.rules{margin:0;padding-left:22px;display:grid;gap:6px;font-size:18px}
+.test-card{border-color:#0f766e;box-shadow:4px 4px 0 #0f766e;background:#effaf8;display:flex;flex-direction:column;gap:10px}
+.test-card.done{background:var(--card);border-color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.test-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.btn.test-btn{background:#0f766e;font-size:22px;padding:12px 32px}
+.test-panel{border-color:#0f766e;box-shadow:4px 4px 0 #0f766e}
+.opt.picked{background:#d9f0ec;border-color:#0f766e;box-shadow:3px 3px 0 #0f766e}
+.options.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.listen-big{display:flex;justify-content:center;padding:18px 0 6px}
+.btn.listen.must{background:#0f766e;color:#fff;font-size:24px;padding:14px 34px}
+.btn.listen.must svg{width:28px;height:28px}
+.qr-box.big{width:280px;height:280px}
+.listen-row-rec{background:#fff8e1}
+.must-tag{display:block;font-size:12px;color:#9a6400;font-weight:700}
+@media (max-width:520px){.options.three{grid-template-columns:1fr}}
+
+.move-ctl{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.move-ctl select{font-size:14px;padding:3px 6px;border:1.5px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);max-width:170px}
+.move-ctl .btn{font-size:13px;padding:3px 10px;box-shadow:2px 2px 0 var(--ink)}

@@ -57,6 +57,10 @@ function doPost(e) {
       PropertiesService.getScriptProperties().setProperty('diagPhase', ph);
       return json({ ok: true, phase: ph });
     }
+    if (data.action === 'moveStudent') {
+      if (data.key !== TEACHER_CODE) return json({ ok: false, error: '老師密碼不對' });
+      return json(moveStudent_(data.name, data.from || '', data.to || ''));
+    }
     if (data.action === 'addClass' || data.action === 'renameClass' || data.action === 'delClass') {
       if (data.key !== TEACHER_CODE) return json({ ok: false, error: '老師密碼不對' });
       if (data.action === 'addClass') return json(addClass_(data.name));
@@ -380,4 +384,24 @@ function deleteClass_(id) {
   const c = findClass_(id);
   if (c) classSheet_().deleteRow(c.row);
   return { ok: true };   // 作答紀錄不會刪除，只是不再列出這個班級
+}
+
+// 把某位學生的紀錄（練習＋前後測）從一個班級移到另一個班級，例如把「未分班」的舊資料分到正確的班級
+function moveStudent_(name, from, to) {
+  name = String(name || '');
+  if (!name || !to || !findClass_(to)) return { ok: false, error: '找不到要移過去的班級' };
+  let moved = 0;
+  [[LOG_SHEET, 2, 9], [DIAG_SHEET, 2, 13]].forEach(function (cfg) {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(cfg[0]);
+    if (!sh || sh.getLastRow() < 2) return;
+    const n = sh.getLastRow() - 1;
+    const names = sh.getRange(2, cfg[1], n, 1).getValues();
+    const cls = sh.getRange(2, cfg[2], n, 1).getValues();
+    let changed = false;
+    for (let i = 0; i < n; i++) {
+      if (String(names[i][0]) === name && String(cls[i][0] || '') === String(from)) { cls[i][0] = to; moved++; changed = true; }
+    }
+    if (changed) sh.getRange(2, cfg[2], n, 1).setValues(cls);
+  });
+  return { ok: true, moved: moved };
 }

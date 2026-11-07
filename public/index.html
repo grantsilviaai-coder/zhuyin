@@ -287,6 +287,28 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
   body.print-qr #qrSheet, body.print-qr #qrSheet *{visibility:visible}
   body.print-qr #qrSheet{position:absolute;left:0;top:0;width:100%;border:0}
 }
+
+/* 前後測（合併在首頁） */
+.phase-tag{display:inline-block;background:#0f766e;color:#fff;font-weight:700;border-radius:8px;padding:2px 12px;font-size:16px}
+.rules{margin:0;padding-left:22px;display:grid;gap:6px;font-size:18px}
+.test-card{border-color:#0f766e;box-shadow:4px 4px 0 #0f766e;background:#effaf8;display:flex;flex-direction:column;gap:10px}
+.test-card.done{background:var(--card);border-color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.test-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.btn.test-btn{background:#0f766e;font-size:22px;padding:12px 32px}
+.test-panel{border-color:#0f766e;box-shadow:4px 4px 0 #0f766e}
+.opt.picked{background:#d9f0ec;border-color:#0f766e;box-shadow:3px 3px 0 #0f766e}
+.options.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.listen-big{display:flex;justify-content:center;padding:18px 0 6px}
+.btn.listen.must{background:#0f766e;color:#fff;font-size:24px;padding:14px 34px}
+.btn.listen.must svg{width:28px;height:28px}
+.qr-box.big{width:280px;height:280px}
+.listen-row-rec{background:#fff8e1}
+.must-tag{display:block;font-size:12px;color:#9a6400;font-weight:700}
+@media (max-width:520px){.options.three{grid-template-columns:1fr}}
+
+.move-ctl{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.move-ctl select{font-size:14px;padding:3px 6px;border:1.5px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);max-width:170px}
+.move-ctl .btn{font-size:13px;padding:3px 10px;box-shadow:2px 2px 0 var(--ink)}
 </style>
 </head>
 <body>
@@ -329,6 +351,11 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
 
   <!-- 首頁 -->
   <section id="home" class="section-gap" hidden>
+    <div class="panel test-card" id="testCard" hidden>
+      <div class="test-head"><span class="phase-tag" id="testTag">前測</span><h2 style="margin:0">注音小檢查</h2></div>
+      <p class="lead" id="testMsg" style="margin:0"></p>
+      <div class="actions"><button class="btn test-btn" id="testGo">開始</button><button class="linkbtn" id="testRedo" hidden>老師請我再做一次</button></div>
+    </div>
     <div class="panel">
       <h2 id="hello">今天想練什麼？</h2>
       <p class="lead">每一回 10 題，答對一題得一顆星。答錯的題目會記下來，之後可以再練一次。</p>
@@ -346,6 +373,43 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
       <div class="modes">
         <button class="mode parent" id="parentBtn"><span class="tag">家長區</span><b>在這台加入字詞</b><span class="ex" id="customInfo">只會出現在這台 iPad</span></button>
       </div>
+    </div>
+  </section>
+
+  <!-- 前測／後測 -->
+  <section id="testIntro" hidden>
+    <div class="panel login section-gap">
+      <div>
+        <span class="phase-tag" id="introTag">前測</span>
+        <h2 id="introTitle" style="margin-top:10px">注音小檢查</h2>
+        <p class="lead" style="margin:0">這不是考試，是要幫老師知道你哪些注音已經很熟、哪些還要多練。</p>
+      </div>
+      <ul class="rules">
+        <li>一共 <b>32 題</b>，大約 12 分鐘。</li>
+        <li>每一題選一個你覺得對的答案，選了就會跳到下一題。</li>
+        <li>做的時候<b>不會</b>告訴你對或錯，全部做完再交給老師。</li>
+        <li>有幾題要<b>用聽的</b>：先按「聽聽看」，再選你聽到的注音。</li>
+        <li>其他題目也可以按「聽聽看」，但先自己想想看再聽。</li>
+      </ul>
+      <div class="actions"><button class="btn" id="tStart" style="font-size:22px;padding:12px 28px">開始</button><button class="btn light" id="tIntroBack">先不要</button></div>
+    </div>
+  </section>
+  <section id="testQuiz" hidden>
+    <div class="topbar">
+      <div class="progress"><span id="tProg">第 1 / 32 題</span><div class="bar"><i id="tBar" style="width:0%"></i></div></div>
+    </div>
+    <div class="panel test-panel" id="tPanel">
+      <p class="q-title" id="tTitle"></p>
+      <div id="tWord"></div>
+      <div class="listen-row"><button class="btn light listen" id="tSay" type="button"></button></div>
+      <div id="tOptions"></div>
+    </div>
+  </section>
+  <section id="testDone" hidden>
+    <div class="panel result section-gap">
+      <h2 style="font-size:32px">做完了，謝謝你！</h2>
+      <p class="lead" id="tDoneMsg" style="margin:0"></p>
+      <div class="actions" style="justify-content:center"><button class="btn" id="tRetry" hidden>再送一次</button><button class="btn light" id="tDoneHome">回首頁去練習</button></div>
     </div>
   </section>
 
@@ -450,10 +514,10 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
       </div>
       <div class="panel section-gap" id="diagPanel">
         <div class="topbar" style="margin:0">
-          <div><h2 style="margin:0">診斷報告</h2><span class="hint">資料來自「注音診斷站」，每位學生的前測、後測各取最近一次。</span></div>
+          <div><h2 style="margin:0">診斷報告</h2><span class="hint">前測用 A 卷、後測用 B 卷（題型相同、詞語不同），每位學生各取最近一次。</span></div>
         </div>
         <div class="phase-box">
-          <span style="font-weight:700">注音診斷站現在開放<span id="phaseClassName"></span>：</span>
+          <span style="font-weight:700">學生首頁現在出現<span id="phaseClassName"></span>：</span>
           <label class="toggle"><input type="radio" name="dphase" value="前測"> 前測</label>
           <label class="toggle"><input type="radio" name="dphase" value="後測"> 後測</label>
           <label class="toggle"><input type="radio" name="dphase" value="關閉"> 關閉</label>
@@ -474,7 +538,7 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
       <div class="panel section-gap" id="classPanel">
         <div>
           <h2>班級管理</h2>
-          <p class="lead" style="margin:0">每個班級有自己的 QR Code。學生掃自己班的 QR Code，資料就會自動分到那一班，只要輸入名字。</p>
+          <p class="lead" style="margin:0">每個班級有自己的一張 QR Code，練習和前後測都在同一個網站。學生掃自己班的 QR Code，資料就會自動分到那一班，只要輸入名字。</p>
         </div>
         <div class="add-class">
           <input id="newClassName" maxlength="30" placeholder="例如：王老師・三年二班" aria-label="新班級名稱">
@@ -502,7 +566,7 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
       <div class="panel section-gap">
         <div>
           <h2>老師錄音</h2>
-          <p class="lead" style="margin:0">iPad 內建語音常把輕聲唸錯，例如把「媽媽」的第二個字唸成一聲。在這裡錄下你自己的聲音，學生按「聽聽看」時就會播放你的錄音；沒有錄音的詞，照樣用 iPad 語音。</p>
+          <p class="lead" style="margin:0">前後測的<b>聽音題</b>（最上面標黃色的 8 個詞）一定要錄，學生才聽得到正確的發音。另外 iPad 內建語音常把輕聲唸錯，例如「媽媽」，這些詞也建議錄。沒有錄音的詞，照樣用 iPad 語音。</p>
         </div>
         <ol class="rec-steps">
           <li>按「錄音」，第一次會問能不能用麥克風，請按「允許」。</li>
@@ -1970,7 +2034,8 @@ function allItems(){
   customItems().forEach(i=>map.set(i.w,i));
   return [...map.values()];
 }
-function pool(){
+function pool(){ return poolAll().filter(it=>!TEST_WORDS.has(it.w)); }
+function poolAll(){
   const cls = classItems();
   if(state.onlyClass && cls.length>=4) return cls;
   const mine = customItems();
@@ -2161,7 +2226,7 @@ function buildRound(mode){
 
 // ======== 畫面 ========
 const $ = id=>document.getElementById(id);
-const screens = ['pickClass','login','home','quiz','result','parent','teacher'];
+const screens = ['pickClass','login','home','quiz','result','parent','teacher','testIntro','testQuiz','testDone'];
 function show(name){
   screens.forEach(s=>$(s).hidden = s!==name);
   const studentView = name!=='teacher' && name!=='login' && name!=='pickClass';
@@ -2181,7 +2246,14 @@ function renderClassLine(){
   el.innerHTML = `班級：<b>${esc(className||'讀取中…')}</b> <button type="button" class="linkbtn" id="notMyClass">不是這一班？</button>`;
   $('notMyClass').addEventListener('click',()=>{ setClass('',''); student=null; store.set('student',null); goHome(); });
 }
-function onClassWords(){ renderClassLine(); if(!$('home').hidden) refreshHome(); }
+const GO_TEST = new URLSearchParams(location.search).get('go')==='test';
+let goTestUsed = false;
+function onClassWords(d){
+  if(d && d.diagPhase){ diagPhase = d.diagPhase; store.set('diagPhase', diagPhase); }
+  renderClassLine();
+  if(!$('home').hidden) refreshHome();
+  if(GO_TEST && !goTestUsed && student && !$('home').hidden && diagPhase!=='關閉'){ goTestUsed = true; openTestIntro(); }
+}
 
 function refreshHome(){
   $('starCount').textContent = state.stars;
@@ -2193,6 +2265,7 @@ function refreshHome(){
   $('customInfo').textContent = c ? `這台已加入 ${c} 個詞${state.onlyMine&&c>=4?'（目前只練這些）':''}` : '只會出現在這台 iPad';
   const cls = classItems().length;
   const nb = $('classNotice');
+  refreshTestCard();
   if(cls){ nb.hidden=false; nb.textContent = state.onlyClass&&cls>=4 ? `老師指定了 ${cls} 個本週字詞，今天的題目都會從這些詞出。` : `老師加了 ${cls} 個本週字詞，會混在題目裡出現。`; }
   else nb.hidden=true;
 }
@@ -2335,6 +2408,7 @@ $('loginForm').addEventListener('submit',e=>{
   store.set('student', student);
   loadStudentState();
   show('home');
+  if(GO_TEST && !goTestUsed && HAS_BACKEND && diagPhase!=='關閉'){ goTestUsed = true; openTestIntro(); }
 });
 $('switchBtn').addEventListener('click',()=>{
   student = null; store.set('student', null);
@@ -2435,7 +2509,17 @@ let tClassNames = {};
 let tClassList = [];
 const isOneClass = ()=> tClass!=='all' && tClass!=='_none';
 const clsLabel = id => id ? (tClassNames[id] || '（已刪除的班級）') : '未分班';
-const nameCell = s => `<td style="white-space:nowrap">${esc(s.name)}${tClass==='all'?`<div class="cls-tag">${esc(clsLabel(s.c))}</div>`:''}</td>`;
+const moveCtl = s => (!s.c && tClassList.length) ? `<div class="move-ctl" data-name="${esc(s.name)}"><select aria-label="把 ${esc(s.name)} 分到哪一班"><option value="">分到班級…</option>${tClassList.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select><button class="btn light" data-act="move">分過去</button></div>` : '';
+const nameCell = s => `<td style="white-space:nowrap">${esc(s.name)}${tClass==='all'?`<div class="cls-tag">${esc(clsLabel(s.c))}</div>`:''}${moveCtl(s)}</td>`;
+// 「分到班級」：把未分班學生的所有紀錄移到選好的班級
+document.addEventListener('click', async e=>{
+  const b = e.target.closest('.move-ctl button[data-act=move]'); if(!b) return;
+  const box = b.closest('.move-ctl'), to = box.querySelector('select').value, name = box.dataset.name;
+  if(!to){ box.querySelector('select').focus(); return; }
+  b.disabled = true; b.textContent = '移動中…';
+  try{ await postJSON({action:'moveStudent', key:tKey, name, from:'', to}); await new Promise(r=>setTimeout(r,1500)); loadReport(); }
+  catch(err){ b.disabled = false; b.textContent = '分過去'; $('tErr').textContent = '移動失敗，請確認網路後再試一次'; }
+});
 async function loadClassesT(){
   try{ tClassList = await fetchClasses(); }catch(e){ return; }
   tClassList.forEach(c=>{ tClassNames[c.id]=c.name; });
@@ -2448,7 +2532,6 @@ async function loadClassesT(){
 $('tClass').addEventListener('change',()=>{ tClass=$('tClass').value; try{ sessionStorage.setItem('zyx-tclass', tClass); }catch(e){} loadReport(); });
 
 const XQ_URL = location.origin + location.pathname;
-const DIAG_URL = 'https://jazzy-trifle-9635da.netlify.app/';
 function qrSVG(text){
   const q = new QRLib.QRCode(-1, QRLib.L.M); q.addData(text); q.make();
   const n = q.getModuleCount(), pad = 4; let d='';
@@ -2510,15 +2593,14 @@ $('classMgr').addEventListener('click',async e=>{
 });
 function showQR(id){
   const c = tClassList.find(x=>x.id===id); if(!c) return;
-  const u1 = XQ_URL + '#c-' + id, u2 = DIAG_URL + '#c-' + id;
+  const u1 = XQ_URL + '#c-' + id;
   $('qrView').hidden = false;
   $('qrView').innerHTML = `<div class="qr-sheet" id="qrSheet">
       <h3>${esc(c.name)}</h3>
       <div class="qr-pair">
-        <figure><div class="qr-box">${qrSVG(u1)}</div><figcaption><b>注音小學堂</b><span>每天練習</span></figcaption></figure>
-        <figure><div class="qr-box diag">${qrSVG(u2)}</div><figcaption><b>注音診斷站</b><span>前測・後測（老師說可以再做）</span></figcaption></figure>
+        <figure><div class="qr-box big">${qrSVG(u1)}</div><figcaption><b>注音小學堂</b><span>練習・前測・後測都在這裡</span></figcaption></figure>
       </div>
-      <p class="qr-note">用 iPad 相機掃描，輸入名字就能開始。兩個網站的名字要寫一樣。</p>
+      <p class="qr-note">用 iPad 相機掃描，輸入自己的名字就能開始。</p>
     </div>
     <div class="actions no-print"><button class="btn" id="printQR">列印這一班的 QR Code</button><button class="btn light" id="closeQR">關閉</button></div>`;
   $('printQR').addEventListener('click',()=>{ document.body.classList.add('print-qr'); try{ window.print(); }catch(e){} setTimeout(()=>document.body.classList.remove('print-qr'),500); });
@@ -2579,9 +2661,11 @@ let recActive = null;  // {w, mr, stream, timer}
 function hasLight(it){ return it.syl.some(s=>s.t===5); }
 function renderRec(){
   const only = $('recOnlyLight').checked;
-  const items = allItems().filter(it=>!only || hasLight(it));
+  const listen = LISTEN_ITEMS.map(x=>x.item);
+  const items = listen.concat(allItems().filter(it=>!TEST_WORDS.has(it.w) && (!only || hasLight(it))));
   const done = items.filter(it=>recWords.has(it.w)).length;
-  $('recCount').textContent = `已錄 ${done} / ${items.length} 個詞`;
+  const ld = listen.filter(it=>recWords.has(it.w)).length;
+  $('recCount').textContent = `聽音題已錄 ${ld} / ${listen.length}　全部已錄 ${done} / ${items.length}`;
   $('recList').innerHTML = items.map(it=>{
     const st = recState[it.w] || {phase:'idle'};
     const has = recWords.has(it.w);
@@ -2590,14 +2674,15 @@ function renderRec(){
     else if(st.phase==='review') btns = `<button class="btn" data-act="save">儲存</button><button class="btn light" data-act="preview">再聽一次</button><button class="btn light" data-act="rec">重錄</button>`;
     else if(st.phase==='saving') btns = `<span class="hint">儲存中…</span>`;
     else btns = `<button class="btn light" data-act="rec">${has?'重新錄音':'錄音'}</button>${has?`<button class="btn light" data-act="play">播放</button><button class="btn light danger" data-act="del">刪除</button>`:''}`;
-    return `<div class="rec-row" data-w="${esc(it.w)}"><div class="rec-word">${miniWord(it.w, zyStr(it.syl))}</div><span class="pill ${has?'on':''}">${has?'已錄音':'未錄音'}</span><div class="rec-btns">${btns}</div></div>`;
+    const lt = LISTEN_ITEMS.find(x=>x.item.w===it.w);
+    return `<div class="rec-row${lt?' listen-row-rec':''}" data-w="${esc(it.w)}"><div class="rec-word">${miniWord(it.w, zyStr(it.syl))}${lt?`<small class="must-tag">${lt.form==='A'?'前測':'後測'}聽音題・一定要錄</small>`:''}</div><span class="pill ${has?'on':''}">${has?'已錄音':'未錄音'}</span><div class="rec-btns">${btns}</div></div>`;
   }).join('') || '<span class="hint">沒有符合的詞</span>';
 }
 $('recOnlyLight').addEventListener('change',renderRec);
 
 // ---- 診斷報告 ----
-const SKILLS = ['拼讀','認讀','一聲','二聲','三聲','四聲','輕聲','ㄓㄗ','ㄔㄘ','ㄕㄙ','ㄣㄥ','ㄢㄤ','ㄋㄌ','ㄈㄏ'];
-const SKILL_GROUP = {'拼讀':'整體','認讀':'整體','一聲':'聲調','二聲':'聲調','三聲':'聲調','四聲':'聲調','輕聲':'聲調'};
+const SKILLS = ['拼讀','認讀','一聲','二聲','三聲','四聲','輕聲','ㄓㄗ','ㄔㄘ','ㄕㄙ','ㄣㄥ','ㄢㄤ','ㄋㄌ','ㄈㄏ','聽ㄓㄗ','聽ㄔㄘ','聽ㄕㄙ','聽ㄣㄥ'];
+const SKILL_GROUP = {'拼讀':'整體','認讀':'整體','一聲':'聲調','二聲':'聲調','三聲':'聲調','四聲':'聲調','輕聲':'聲調','聽ㄓㄗ':'聽音辨別','聽ㄔㄘ':'聽音辨別','聽ㄕㄙ':'聽音辨別','聽ㄣㄥ':'聽音辨別'};
 async function loadDiag(){
   $('diagErr').textContent='';
   try{
@@ -2719,6 +2804,172 @@ $('againBtn').addEventListener('click',()=>startRound(lastMode==='review'&&!stat
 $('rReviewBtn').addEventListener('click',()=>startRound('review'));
 $('parentBtn').addEventListener('click',()=>{ show('parent'); renderMine(); });
 $('parentBack').addEventListener('click',goHome);
+
+
+
+// ======== 前測／後測（合併在注音小學堂裡） ========
+// 前測用 A 卷、後測用 B 卷：題型一樣、詞語不同，詞語也不會出現在練習題裡
+// [題型, 詞語 注音, 能力, 第幾個字(從0算), 要考的注音符號]
+// m1 看字選注音、m2 看注音選字、m3 聲調、m4 易混淆音(三選一)、m5 聽音辨別
+const FORMS = {
+  A: [
+    ['m1','蝸牛 ㄨㄛ ㄋㄧㄡˊ','拼讀'], ['m4','珍珠 ㄓㄣ ㄓㄨ','ㄓㄗ',0,'ㄓ'], ['m3','開心 ㄎㄞ ㄒㄧㄣ','一聲',0], ['m5','竹子 ㄓㄨˊ ˙ㄗ','聽ㄓㄗ',0,'ㄓ'],
+    ['m4','吃飯 ㄔ ㄈㄢˋ','ㄔㄘ',0,'ㄔ'], ['m2','雞蛋 ㄐㄧ ㄉㄢˋ','認讀'], ['m3','白雲 ㄅㄞˊ ㄩㄣˊ','二聲',0], ['m4','書桌 ㄕㄨ ㄓㄨㄛ','ㄕㄙ',0,'ㄕ'],
+    ['m4','門口 ㄇㄣˊ ㄎㄡˇ','ㄣㄥ',0,'ㄣ'], ['m3','水果 ㄕㄨㄟˇ ㄍㄨㄛˇ','三聲',0], ['m5','出門 ㄔㄨ ㄇㄣˊ','聽ㄔㄘ',0,'ㄔ'], ['m4','安全 ㄢ ㄑㄩㄢˊ','ㄢㄤ',0,'ㄢ'],
+    ['m3','大樹 ㄉㄚˋ ㄕㄨˋ','四聲',1], ['m4','南瓜 ㄋㄢˊ ㄍㄨㄚ','ㄋㄌ',0,'ㄋ'], ['m4','房子 ㄈㄤˊ ˙ㄗ','ㄈㄏ',0,'ㄈ'], ['m3','哥哥 ㄍㄜ ˙ㄍㄜ','輕聲',1],
+    ['m1','鞋子 ㄒㄧㄝˊ ˙ㄗ','拼讀'], ['m4','自己 ㄗˋ ㄐㄧˇ','ㄓㄗ',0,'ㄗ'], ['m5','掃地 ㄙㄠˇ ㄉㄧˋ','聽ㄕㄙ',0,'ㄙ'], ['m3','青菜 ㄑㄧㄥ ㄘㄞˋ','一聲',0],
+    ['m4','廁所 ㄘㄜˋ ㄙㄨㄛˇ','ㄔㄘ',0,'ㄘ'], ['m4','雨傘 ㄩˇ ㄙㄢˇ','ㄕㄙ',1,'ㄙ'], ['m3','牙齒 ㄧㄚˊ ㄔˇ','二聲',0], ['m2','玩具 ㄨㄢˊ ㄐㄩˋ','認讀'],
+    ['m4','風箏 ㄈㄥ ㄓㄥ','ㄣㄥ',0,'ㄥ'], ['m3','小鳥 ㄒㄧㄠˇ ㄋㄧㄠˇ','三聲',1], ['m5','冷水 ㄌㄥˇ ㄕㄨㄟˇ','聽ㄣㄥ',0,'ㄥ'], ['m4','糖果 ㄊㄤˊ ㄍㄨㄛˇ','ㄢㄤ',0,'ㄤ'],
+    ['m3','汽車 ㄑㄧˋ ㄔㄜ','四聲',0], ['m4','籃球 ㄌㄢˊ ㄑㄧㄡˊ','ㄋㄌ',0,'ㄌ'], ['m4','紅色 ㄏㄨㄥˊ ㄙㄜˋ','ㄈㄏ',0,'ㄏ'], ['m3','尾巴 ㄨㄟˇ ˙ㄅㄚ','輕聲',1],
+  ],
+  B: [
+    ['m1','螃蟹 ㄆㄤˊ ㄒㄧㄝˋ','拼讀'], ['m4','照片 ㄓㄠˋ ㄆㄧㄢˋ','ㄓㄗ',0,'ㄓ'], ['m3','公車 ㄍㄨㄥ ㄔㄜ','一聲',0], ['m5','坐車 ㄗㄨㄛˋ ㄔㄜ','聽ㄓㄗ',0,'ㄗ'],
+    ['m4','船長 ㄔㄨㄢˊ ㄓㄤˇ','ㄔㄘ',0,'ㄔ'], ['m2','餅乾 ㄅㄧㄥˇ ㄍㄢ','認讀'], ['m3','魚缸 ㄩˊ ㄍㄤ','二聲',0], ['m4','手錶 ㄕㄡˇ ㄅㄧㄠˇ','ㄕㄙ',0,'ㄕ'],
+    ['m4','身體 ㄕㄣ ㄊㄧˇ','ㄣㄥ',0,'ㄣ'], ['m3','雨衣 ㄩˇ ㄧ','三聲',0], ['m5','草地 ㄘㄠˇ ㄉㄧˋ','聽ㄔㄘ',0,'ㄘ'], ['m4','飯碗 ㄈㄢˋ ㄨㄢˇ','ㄢㄤ',0,'ㄢ'],
+    ['m3','電話 ㄉㄧㄢˋ ㄏㄨㄚˋ','四聲',1], ['m4','奶奶 ㄋㄞˇ ˙ㄋㄞ','ㄋㄌ',0,'ㄋ'], ['m4','肥皂 ㄈㄟˊ ㄗㄠˋ','ㄈㄏ',0,'ㄈ'], ['m3','妹妹 ㄇㄟˋ ˙ㄇㄟ','輕聲',1],
+    ['m1','外套 ㄨㄞˋ ㄊㄠˋ','拼讀'], ['m4','走路 ㄗㄡˇ ㄌㄨˋ','ㄓㄗ',0,'ㄗ'], ['m5','山上 ㄕㄢ ㄕㄤˋ','聽ㄕㄙ',0,'ㄕ'], ['m3','星期 ㄒㄧㄥ ㄑㄧˊ','一聲',0],
+    ['m4','菜園 ㄘㄞˋ ㄩㄢˊ','ㄔㄘ',0,'ㄘ'], ['m4','松鼠 ㄙㄨㄥ ㄕㄨˇ','ㄕㄙ',0,'ㄙ'], ['m3','茶杯 ㄔㄚˊ ㄅㄟ','二聲',0], ['m2','剪刀 ㄐㄧㄢˇ ㄉㄠ','認讀'],
+    ['m4','燈光 ㄉㄥ ㄍㄨㄤ','ㄣㄥ',0,'ㄥ'], ['m3','小草 ㄒㄧㄠˇ ㄘㄠˇ','三聲',1], ['m5','很好 ㄏㄣˇ ㄏㄠˇ','聽ㄣㄥ',0,'ㄣ'], ['m4','上學 ㄕㄤˋ ㄒㄩㄝˊ','ㄢㄤ',0,'ㄤ'],
+    ['m3','跳繩 ㄊㄧㄠˋ ㄕㄥˊ','四聲',0], ['m4','綠色 ㄌㄩˋ ㄙㄜˋ','ㄋㄌ',0,'ㄌ'], ['m4','黃色 ㄏㄨㄤˊ ㄙㄜˋ','ㄈㄏ',0,'ㄏ'], ['m3','鼻子 ㄅㄧˊ ˙ㄗ','輕聲',1],
+  ],
+};
+// 易混淆音的第三個選項：選一個能拼得出來、但不是答案的音
+const THIRD = {'ㄓ':'ㄔ','ㄗ':'ㄘ','ㄔ':'ㄕ','ㄘ':'ㄙ','ㄕ':'ㄖ','ㄙ':'ㄘ','ㄣ':'ㄢ','ㄥ':'ㄤ','ㄢ':'ㄣ','ㄤ':'ㄥ','ㄋ':'ㄇ','ㄌ':'ㄖ','ㄈ':'ㄅ','ㄏ':'ㄍ'};
+const FORM_ITEMS = {};
+Object.keys(FORMS).forEach(k=>{ FORM_ITEMS[k] = FORMS[k].map(r=>parseLine(r[1])); });
+const TEST_WORDS = new Set(Object.values(FORM_ITEMS).flat().map(it=>it.w));
+const LISTEN_ITEMS = Object.keys(FORMS).flatMap(k=>FORMS[k].filter(r=>r[0]==='m5').map(r=>({form:k, item:parseLine(r[1])})));
+MODE_NAMES.m5 = '聽音辨別';
+
+function formOf(ph){ return ph==='後測' ? 'B' : 'A'; }
+function buildTest(ph){
+  const k = formOf(ph), pool = FORM_ITEMS[k];
+  return FORMS[k].map(([mode,line,skill,idx,letter],n)=>{
+    const item = parseLine(line);
+    let q;
+    if(mode==='m4' || mode==='m5'){
+      const spots=[]; item.syl.forEach((s,i)=>[...s.l].forEach((c,j)=>{ if(c===letter && i===idx) spots.push({i,k:j,c}); }));
+      const sp = spots[0];
+      const swap = to=>{ const c=item.syl.map(x=>({...x})); const arr=[...c[sp.i].l]; arr[sp.k]=to; c[sp.i].l=arr.join(''); return c; };
+      if(mode==='m4'){
+        const ch = Array.from(item.w)[sp.i];
+        const opts = shuffle([sp.c, PAIRS[sp.c], THIRD[sp.c]]);
+        q = {mode,item,idx:sp.i,spot:sp,title:'空格裡應該填哪一個？',show:'blank',cls:'big',
+             options:opts.map(p=>({label:p,key:p,text:`第${sp.i+1}字「${ch}」選${p}`,correct:p===sp.c}))};
+      } else {
+        const right = zyStr(item.syl);
+        const opts = shuffle([right, zyStr(swap(PAIRS[sp.c])), zyStr(swap(THIRD[sp.c]))]);
+        q = {mode,item,title:'按「聽聽看」，選出你聽到的注音',show:'listen',cls:'zy-opt',
+             options:opts.map(o=>({label:optZy(o),key:o,text:o,correct:o===right}))};
+      }
+    } else {
+      q = makeQ(mode, item, pool, {idx});
+      if(mode==='m1') q.title='這個詞的注音是哪一個？';
+      if(mode==='m2') q.title='這是哪一個詞？';
+    }
+    q.no = n+1; q.skill = skill;
+    return q;
+  });
+}
+
+let diagPhase = store.get('diagPhase', '前測');
+let run = store.get('diagRun', null);   // {name, c, phase, attempt, i, answers:[]}
+let tq = [], tAnswered = false;
+const doneKey = ()=> `diagDone:${classId}:${student?student.name:''}:${diagPhase}`;
+function runActive(){ return run && student && run.name===student.name && (run.c||'')===classId && run.phase===diagPhase && run.i>0 && run.i<FORMS[formOf(run.phase)].length; }
+
+function refreshTestCard(){
+  const card = $('testCard'); if(!card) return;
+  if(!HAS_BACKEND || !student || diagPhase==='關閉'){ card.hidden = true; return; }
+  card.hidden = false;
+  $('testTag').textContent = diagPhase;
+  const done = store.get(doneKey(), null);
+  if(runActive()){
+    $('testMsg').textContent = `你上次做到第 ${run.i+1} 題，按下面的按鈕接著做。`;
+    $('testGo').textContent = '接著做'; $('testGo').hidden = false; $('testRedo').hidden = true;
+    card.classList.remove('done');
+  } else if(done){
+    $('testMsg').textContent = `你已經做完${diagPhase}了，謝謝你！`;
+    $('testGo').hidden = true; $('testRedo').hidden = false;
+    card.classList.add('done');
+  } else {
+    $('testMsg').textContent = `老師開放了${diagPhase}，大約 12 分鐘。請先做這個，再去練習。`;
+    $('testGo').textContent = '開始'; $('testGo').hidden = false; $('testRedo').hidden = true;
+    card.classList.remove('done');
+  }
+}
+function openTestIntro(){
+  if(runActive()) return resumeTest();
+  show('testIntro');
+  $('introTag').textContent = diagPhase;
+  $('introTitle').textContent = `注音小檢查（${diagPhase}）`;
+}
+function startTest(){
+  run = {name:student.name, c:classId, phase:diagPhase, attempt:String(Date.now()), i:0, answers:[]};
+  store.set('diagRun', run);
+  tq = buildTest(diagPhase);
+  show('testQuiz'); renderTQ(); prefetchTest();
+}
+function resumeTest(){ tq = buildTest(run.phase); show('testQuiz'); renderTQ(); prefetchTest(); }
+function prefetchTest(){ if(!HAS_BACKEND) return; tq.forEach(q=>{ if(recWords.has(q.item.w)) fetchAudio(q.item.w).catch(()=>{}); }); }
+
+function renderTQ(){
+  tAnswered = false;
+  const q = tq[run.i]; q.heard = false;
+  $('tProg').textContent = `第 ${run.i+1} / ${tq.length} 題`;
+  $('tBar').style.width = (run.i/tq.length*100)+'%';
+  $('tTitle').textContent = q.title;
+  $('tWord').innerHTML = q.show==='listen'
+    ? `<div class="listen-big"><span class="hint">這一題要用聽的</span></div>`
+    : wordHTML(q,false);
+  $('tSay').hidden = !(canSpeak || (HAS_BACKEND && recWords.has(q.item.w)));
+  $('tSay').classList.toggle('must', q.show==='listen');
+  $('tOptions').className = 'options ' + (q.cls==='five'?'five':'') + (q.options.length===3?' three':'');
+  $('tOptions').innerHTML = q.options.map((o,i)=>`<button class="opt ${q.cls==='five'?'':q.cls}" data-i="${i}">${o.label}</button>`).join('');
+  $('tOptions').querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>chooseT(+b.dataset.i)));
+  $('tPanel').classList.remove('pop'); void $('tPanel').offsetWidth; $('tPanel').classList.add('pop');
+}
+function chooseT(i){
+  if(tAnswered) return; tAnswered = true;
+  const q = tq[run.i];
+  const btns = $('tOptions').querySelectorAll('.opt');
+  btns.forEach(b=>b.disabled=true); btns[i].classList.add('picked');
+  run.answers.push({no:q.no, skill:q.skill, mode:MODE_NAMES[q.mode], w:q.item.w, zy:zyStr(q.item.syl), ok:q.options[i].correct, pick:q.options[i].text, heard: q.mode!=='m5' && !!q.heard});
+  run.i++; store.set('diagRun', run);
+  setTimeout(()=>{ if(run.i>=tq.length) finishTest(); else renderTQ(); }, 380);
+}
+async function finishTest(){
+  show('testDone');
+  store.set(`diagDone:${run.c||''}:${run.name}:${run.phase}`, run.attempt);
+  const q = store.get('pending',[]);
+  q.push({action:'diag', name:run.name, c:run.c||classId, phase:run.phase, attempt:run.attempt, answers:run.answers});
+  store.set('pending', q.slice(-30));
+  run = null; store.set('diagRun', null);
+  await trySendTest();
+}
+async function trySendTest(){
+  $('tDoneMsg').textContent='正在把你的作答交給老師…'; $('tRetry').hidden = true;
+  const ok = await flushPending();
+  if(ok) $('tDoneMsg').textContent='已經交給老師了。現在可以去練習了！';
+  else { $('tDoneMsg').textContent='現在沒有網路。連上網以後按「再送一次」，或下次打開網站時會自動補送。'; $('tRetry').hidden = false; }
+}
+
+$('testGo').addEventListener('click',openTestIntro);
+$('testRedo').addEventListener('click',()=>{ store.set(doneKey(), null); openTestIntro(); });
+$('tStart').addEventListener('click',startTest);
+$('tIntroBack').addEventListener('click',goHome);
+$('tRetry').addEventListener('click',trySendTest);
+$('tDoneHome').addEventListener('click',goHome);
+$('tSay').innerHTML = speakerSVG + '聽聽看';
+$('tSay').addEventListener('click',()=>{ const q = run && tq[run.i]; if(!q) return; if(!tAnswered) q.heard = true; speakWord(q.item.w); });
+
+// ======== 啟動 ========
+// 舊的「注音診斷站」網址自動轉到這裡，直接進入前後測
+(function(){
+  if(location.hostname==='jazzy-trifle-9635da.netlify.app'){
+    location.replace('https://zippy-kitten-68848e.netlify.app/?go=test' + (location.hash||''));
+  }
+})();
 if(location.hash==='#teacher') openTeacher(); else goHome();
 loadClassWords();
 loadRecList();
