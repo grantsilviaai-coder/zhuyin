@@ -1,0 +1,81 @@
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <span class="brand-mark">診</span>
+      <span><h1>注音診斷站</h1><small>找出你最需要練習的注音</small></span>
+    </div>
+    <div class="who"><div class="me" id="meBox" hidden><span id="meName"></span><button id="switchBtn">換人</button></div></div>
+  </header>
+
+  <!-- 選班級 -->
+  <section id="pickClass" hidden>
+    <div class="panel login section-gap">
+      <div><h2>你是哪一班？</h2><p class="lead" style="margin:0">點你的班級。下次掃班上的 QR Code 就不用再選了。</p></div>
+      <div class="class-list" id="classList"></div>
+    </div>
+  </section>
+
+  <section id="login" hidden>
+    <form class="panel login section-gap" id="loginForm" novalidate>
+      <div>
+        <h2>你好！你是誰？</h2>
+        <p class="lead" style="margin:0">寫上你的名字，要跟在注音小學堂寫的一樣喔。</p>
+      </div>
+      <p class="class-line" id="classLine"></p>
+      <div class="field"><label for="nameIn">名字</label><input id="nameIn" maxlength="10" autocomplete="off" placeholder="王小明"></div>
+      <p class="err" id="loginErr" aria-live="polite" style="margin:0"></p>
+      <button class="btn" type="submit" style="font-size:22px;padding:12px">下一步</button>
+    </form>
+  </section>
+
+  <section id="intro" hidden>
+    <div class="panel login section-gap">
+      <div>
+        <span class="phase-tag" id="phaseTag">前測</span>
+        <h2 id="introTitle" style="margin-top:10px">注音小檢查</h2>
+        <p class="lead" style="margin:0">這不是考試，是要幫老師知道你哪些注音已經很熟、哪些還要多練。</p>
+      </div>
+      <ul class="rules">
+        <li>一共 <b>30 題</b>，大約 10 分鐘。</li>
+        <li>每一題選一個你覺得對的答案，選了就會跳到下一題。</li>
+        <li>做的時候<b>不會</b>告訴你對或錯，全部做完再交給老師。</li>
+        <li>不確定也沒關係，選你最有把握的那一個。</li>
+        <li>可以按「聽聽看」聽發音，但先自己想想看再聽。</li>
+      </ul>
+      <p class="notice" id="redoNote" hidden></p>
+      <button class="btn" id="startBtn" style="font-size:22px;padding:12px">開始</button>
+    </div>
+  </section>
+
+  <section id="closed" hidden>
+    <div class="panel login section-gap" style="text-align:center">
+      <h2>現在還沒有開放</h2>
+      <p class="lead" style="margin:0">老師還沒有開放診斷測驗，等老師說可以了再來喔。</p>
+      <button class="btn light" id="closedRetry">重新查看</button>
+    </div>
+  </section>
+
+  <section id="quiz" hidden>
+    <div class="topbar">
+      <div class="progress"><span id="progText">第 1 / 30 題</span><div class="bar"><i id="progBar" style="width:0%"></i></div></div>
+    </div>
+    <div class="panel" id="qPanel">
+      <p class="q-title" id="qTitle"></p>
+      <div id="qWord"></div>
+      <div class="listen-row"><button class="btn light listen" id="qSay" type="button"></button></div>
+      <div id="qOptions"></div>
+    </div>
+  </section>
+
+  <section id="done" hidden>
+    <div class="panel result section-gap">
+      <h2 style="font-size:32px">做完了，謝謝你！</h2>
+      <div class="star-row" id="doneStars"></div>
+      <p class="lead" id="doneMsg" style="margin:0">正在把你的作答交給老師…</p>
+      <div class="actions" style="justify-content:center"><button class="btn" id="retrySend" hidden>再送一次</button></div>
+    </div>
+  </section>
+
+  <p class="foot">注音診斷站的作答會交給老師，用來安排之後的練習。</p>
+</div>

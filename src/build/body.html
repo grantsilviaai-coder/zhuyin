@@ -1,0 +1,232 @@
+<body>
+<div class="wrap">
+  <header>
+    <button class="brand" id="homeBtn" aria-label="回首頁">
+      <span class="brand-mark">ㄅ</span>
+      <span><h1>注音小學堂</h1><small>三年級在家自己練習</small></span>
+    </button>
+    <div class="who">
+      <div class="me" id="meBox" hidden><span id="meName"></span><button id="switchBtn">換人</button></div>
+      <div class="stars" title="累積的星星" id="starBox" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f0a91e" stroke="#1c3553" stroke-width="1.5" d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg>
+        <span id="starCount">0</span> 顆星
+      </div>
+    </div>
+  </header>
+
+  <!-- 選班級 -->
+  <section id="pickClass" hidden>
+    <div class="panel login section-gap">
+      <div><h2>你是哪一班？</h2><p class="lead" style="margin:0">點你的班級。下次掃班上的 QR Code 就不用再選了。</p></div>
+      <div class="class-list" id="classList"></div>
+    </div>
+  </section>
+
+  <!-- 登入 -->
+  <section id="login" hidden>
+    <form class="panel login section-gap" id="loginForm" novalidate>
+      <div>
+        <h2>你好！你是誰？</h2>
+        <p class="lead" style="margin:0">寫上你的名字，老師就知道你練習了哪些題目。</p>
+      </div>
+      <p class="class-line" id="classLine"></p>
+      <div class="field"><label for="nameIn">名字</label><input id="nameIn" maxlength="10" autocomplete="off" placeholder="王小明"></div>
+      <p class="err" id="loginErr" aria-live="polite" style="margin:0"></p>
+      <button class="btn" type="submit" style="font-size:22px;padding:12px">開始練習</button>
+    </form>
+  </section>
+
+  <!-- 首頁 -->
+  <section id="home" class="section-gap" hidden>
+    <div class="panel">
+      <h2 id="hello">今天想練什麼？</h2>
+      <p class="lead">每一回 10 題，答對一題得一顆星。答錯的題目會記下來，之後可以再練一次。</p>
+      <div class="notice" id="classNotice" hidden></div>
+      <div class="modes" style="margin-top:14px">
+        <button class="mode" data-mode="m1"><span class="tag">看字選注音</span><b>這個字怎麼拼？</b><span class="ex">看到「蝴蝶」，選出 <span class="exzy" data-zy="ㄏㄨˊ ㄉㄧㄝˊ"></span></span></button>
+        <button class="mode" data-mode="m2"><span class="tag">看注音選字</span><b>這是哪個詞？</b><span class="ex">看到 <span class="exzy" data-zy="ㄆㄧㄥˊ ㄍㄨㄛˇ"></span>，選出「蘋果」</span></button>
+        <button class="mode" data-mode="m3"><span class="tag">聲調練習</span><b>第幾聲？</b><span class="ex">一聲、二聲、三聲、四聲，還是輕聲</span></button>
+        <button class="mode" data-mode="m4"><span class="tag">易混淆音</span><b>ㄓ 還是 ㄗ？</b><span class="ex">ㄓㄗ、ㄔㄘ、ㄕㄙ、ㄣㄥ、ㄢㄤ、ㄋㄌ、ㄈㄏ</span></button>
+        <button class="mode mix" data-mode="mix"><span class="tag">綜合挑戰</span><b>四種題型混在一起</b><span class="ex">考前複習最適合</span></button>
+        <button class="mode review" data-mode="review" id="reviewCard"><span class="tag">錯題複習</span><b>再練一次</b><span class="ex" id="reviewInfo">目前沒有錯題</span></button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="modes">
+        <button class="mode parent" id="parentBtn"><span class="tag">家長區</span><b>在這台加入字詞</b><span class="ex" id="customInfo">只會出現在這台 iPad</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 作答 -->
+  <section id="quiz" hidden>
+    <div class="topbar">
+      <button class="ghost" id="quitBtn">← 回首頁</button>
+      <div class="progress"><span id="progText">第 1 / 10 題</span><div class="bar"><i id="progBar" style="width:0%"></i></div></div>
+    </div>
+    <div class="panel" id="qPanel">
+      <p class="q-title" id="qTitle"></p>
+      <div id="qWord"></div>
+      <div class="listen-row"><button class="btn light listen" id="qSay" type="button"></button></div>
+      <div id="qOptions"></div>
+      <div id="qFeedback"></div>
+      <div class="streak" id="streak" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 結果 -->
+  <section id="result" hidden>
+    <div class="panel result">
+      <h2 id="rTitle">完成了！</h2>
+      <div class="big-score" id="rScore">8 / 10</div>
+      <div class="star-row" id="rStars"></div>
+      <p class="sent" id="rSent"></p>
+      <div id="rWrong"></div>
+      <div class="actions" style="justify-content:center">
+        <button class="btn" id="againBtn">再玩一回</button>
+        <button class="btn light" id="rReviewBtn">練習錯題</button>
+        <button class="btn light" id="rHomeBtn">回首頁</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 家長區 -->
+  <section id="parent" hidden>
+    <div class="topbar"><button class="ghost" id="parentBack">← 回首頁</button></div>
+    <div class="panel section-gap">
+      <div>
+        <h2>在這台 iPad 加入字詞</h2>
+        <p class="lead" style="margin-bottom:8px">一行一個詞：先寫國字，空一格，再寫每個字的注音（每個字的注音之間也空一格）。輕聲的「˙」寫在最前面。這裡加的字詞只會出現在這台 iPad；要給全班練習，請老師在老師後台設定。</p>
+        <p class="hint">例如：<br>蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ<br>桌子 ㄓㄨㄛ ˙ㄗ</p>
+      </div>
+      <div>
+        <label for="customInput" class="hint">可以用下面的注音鍵盤輸入，也可以直接打字或貼上</label>
+        <textarea id="customInput" placeholder="蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ"></textarea>
+        <div class="kb" data-for="customInput"></div>
+        <div class="actions"><button class="btn" id="addBtn">加入題庫</button></div>
+        <p class="err" id="addErr" aria-live="polite"></p>
+        <p class="okmsg" id="addOk" aria-live="polite"></p>
+      </div>
+      <div>
+        <h2 style="font-size:22px">這台加的字詞（<span id="myCount">0</span>）</h2>
+        <label class="toggle"><input type="checkbox" id="onlyMine"> 只練習這些字詞</label>
+        <p class="hint" style="margin:4px 0 10px">勾選後，所有題型都只會出這些詞（至少要有 4 個詞）。</p>
+        <div class="mylist" id="myList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 老師後台 -->
+  <section id="teacher" hidden>
+    <div class="topbar"><button class="ghost" id="teacherBack">← 離開老師後台</button></div>
+    <form class="panel login section-gap" id="tLogin" novalidate>
+      <div><h2>老師後台</h2><p class="lead" style="margin:0">輸入老師密碼，就能看到全班的練習紀錄和錯題。</p></div>
+      <div class="field"><label for="tCode">老師密碼</label><input id="tCode" type="password" autocomplete="off"></div>
+      <p class="err" id="tErr" aria-live="polite" style="margin:0"></p>
+      <button class="btn" type="submit">進入後台</button>
+    </form>
+    <div id="tMain" class="section-gap" hidden>
+      <div class="panel class-bar">
+        <label for="tClass" style="font-weight:700">查看班級</label>
+        <select id="tClass"></select>
+        <span class="hint" id="tClassHint"></span>
+      </div>
+      <div class="panel section-gap">
+        <div class="topbar" style="margin:0">
+          <div><h2 style="margin:0">全班練習狀況</h2><span class="hint" id="tUpdated"></span></div>
+          <button class="btn light" id="tRefresh">重新整理</button>
+        </div>
+        <div>
+          <h3 style="margin:0 0 8px;font-size:18px">全班最常錯的詞</h3>
+          <div class="top" id="tTop"></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 4px;font-size:18px">全班常錯的音</h3>
+          <p class="hint" style="margin:0 0 8px">左邊是正確的音，右邊是學生選成的音。統計來自「看字選注音」、「聲調」、「易混淆音」三種題型。</p>
+          <div class="sound-grid">
+            <div><h4>易混淆音</h4><div class="top" id="tSoundLetters"></div></div>
+            <div><h4>聲調</h4><div class="top" id="tSoundTones"></div></div>
+          </div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 8px;font-size:18px">每位學生</h3>
+          <div class="legend"><span><span class="wchip"><span class="w">字</span><b>×2</b></span> 還沒練會（最後一次還是錯）</span><span><span class="wchip done"><span class="w">字</span></span> 曾經錯，後來答對了</span><span><span class="ear">聽</span> 作答前先按了「聽聽看」才答對</span></div>
+          <div class="tbl-wrap" style="margin-top:8px"><table>
+            <thead><tr><th>姓名</th><th>練習題數</th><th>答對率</th><th>最近練習</th><th>常錯的音</th><th>錯過的詞</th></tr></thead>
+            <tbody id="tBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="panel section-gap" id="diagPanel">
+        <div class="topbar" style="margin:0">
+          <div><h2 style="margin:0">診斷報告</h2><span class="hint">資料來自「注音診斷站」，每位學生的前測、後測各取最近一次。</span></div>
+        </div>
+        <div class="phase-box">
+          <span style="font-weight:700">注音診斷站現在開放<span id="phaseClassName"></span>：</span>
+          <label class="toggle"><input type="radio" name="dphase" value="前測"> 前測</label>
+          <label class="toggle"><input type="radio" name="dphase" value="後測"> 後測</label>
+          <label class="toggle"><input type="radio" name="dphase" value="關閉"> 關閉</label>
+          <button class="btn light" id="savePhase" style="font-size:15px;padding:6px 14px">儲存</button>
+          <span class="okmsg" id="phaseOk" aria-live="polite"></span>
+        </div>
+        <div>
+          <h3 style="margin:0 0 8px;font-size:18px">全班各項能力</h3>
+          <div class="tbl-wrap"><table class="skill-tbl"><thead><tr><th>能力</th><th>前測答對率</th><th>後測答對率</th><th>進步</th></tr></thead><tbody id="dSkills"></tbody></table></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 4px;font-size:18px">每位學生</h3>
+          <div class="legend"><span><span class="dc full">2</span> 全對</span><span><span class="dc half">1</span> 對一部分</span><span><span class="dc none">0</span> 全錯</span><span><span class="dc">1→2</span> 前測→後測答對題數</span><span><span class="ear">聽</span> 作答前有按「聽聽看」的題數</span></div>
+          <div class="tbl-wrap" style="margin-top:8px"><table class="dmat"><thead id="dHead"></thead><tbody id="dBody"></tbody></table></div>
+        </div>
+        <p class="err" id="diagErr" aria-live="polite" style="margin:0"></p>
+      </div>
+      <div class="panel section-gap" id="classPanel">
+        <div>
+          <h2>班級管理</h2>
+          <p class="lead" style="margin:0">每個班級有自己的 QR Code。學生掃自己班的 QR Code，資料就會自動分到那一班，只要輸入名字。</p>
+        </div>
+        <div class="add-class">
+          <input id="newClassName" maxlength="30" placeholder="例如：王老師・三年二班" aria-label="新班級名稱">
+          <button class="btn" id="addClassBtn">新增班級</button>
+        </div>
+        <p class="err" id="classMgrErr" aria-live="polite" style="margin:0"></p>
+        <div class="class-mgr" id="classMgr"></div>
+        <div id="qrView" hidden></div>
+      </div>
+      <div class="panel section-gap">
+        <div>
+          <h2>全班字詞 <span class="cls-name" id="wordsClassName"></span></h2>
+          <p class="notice" id="wordsNeedClass" hidden>請先在最上面「查看班級」選一個班級，再設定那一班的字詞。</p>
+          <p class="lead" style="margin:0">這裡設定的字詞，每個學生的 iPad 打開網站時都會自動拿到。格式和家長區一樣：一行一個詞，國字、空格、注音。</p>
+        </div>
+        <div id="wordsEditor" class="section-gap">
+        <textarea id="classInput" placeholder="蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ"></textarea>
+        <div class="kb" data-for="classInput"></div>
+        <label class="toggle"><input type="checkbox" id="onlyClass"> 全班只練習這些字詞（至少 4 個詞）</label>
+        <div class="actions"><button class="btn" id="saveClass">儲存全班字詞</button></div>
+        <p class="err" id="classErr" aria-live="polite"></p>
+        <p class="okmsg" id="classOk" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="panel section-gap">
+        <div>
+          <h2>老師錄音</h2>
+          <p class="lead" style="margin:0">iPad 內建語音常把輕聲唸錯，例如把「媽媽」的第二個字唸成一聲。在這裡錄下你自己的聲音，學生按「聽聽看」時就會播放你的錄音；沒有錄音的詞，照樣用 iPad 語音。</p>
+        </div>
+        <ol class="rec-steps">
+          <li>按「錄音」，第一次會問能不能用麥克風，請按「允許」。</li>
+          <li>清楚唸一次這個詞，唸完按「停止」（3 秒後也會自動停止）。</li>
+          <li>聽一下錄音，滿意就按「儲存」，不滿意按「重錄」。</li>
+        </ol>
+        <div class="topbar" style="margin:0">
+          <label class="toggle"><input type="checkbox" id="recOnlyLight" checked> 只顯示有輕聲的詞</label>
+          <span class="hint" id="recCount"></span>
+        </div>
+        <p class="err" id="recErr" aria-live="polite" style="margin:0"></p>
+        <div class="rec-list" id="recList"></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">星星和錯題複習存在這台 iPad；作答紀錄會送給老師。朗讀使用瀏覽器內建語音。<br><button class="linkbtn" id="teacherLink">老師後台</button></p>
+</div>

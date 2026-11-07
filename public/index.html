@@ -1,0 +1,2728 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>注音小學堂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* 版面概念：像學校的作業簿，田字格寫國字、旁邊標注音；紅筆訂正、綠筆打勾 */
+:root{
+  --paper:#eef4ef;
+  --card:#ffffff;
+  --ink:#1c3553;
+  --muted:#5d7084;
+  --grid:#c4d8cb;
+  --accent:#1f62b0;
+  --accent-soft:#dde9f7;
+  --star:#f0a91e;
+  --good:#23885a;
+  --good-soft:#dcf1e5;
+  --bad:#d23f3f;
+  --bad-soft:#fbe3e3;
+  --font-display:"LXGW WenKai TC","Kaiti TC","DFKai-SB","BiauKai",serif;
+  --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  background-position:-1px -1px;
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:18px;
+  line-height:1.6;
+  min-height:100vh;
+}
+button{font-family:inherit;color:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0}
+.brand-mark{width:52px;height:52px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--font-body);font-weight:900;font-size:28px}
+.brand h1{margin:0;font-family:var(--font-display);font-size:32px;line-height:1.1;text-align:left}
+.brand small{display:block;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.stars{display:flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:6px 16px;font-weight:700;font-variant-numeric:tabular-nums}
+.stars svg{width:24px;height:24px}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:24px;box-shadow:4px 4px 0 var(--ink)}
+h2{font-family:var(--font-display);font-size:26px;margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--muted);margin:0 0 20px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.mode{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:16px;transition:transform .12s}
+.mode:hover{transform:translateY(-2px);background:var(--accent-soft)}
+.mode .tag{font-size:13px;font-weight:700;color:#fff;background:var(--accent);border-radius:6px;padding:1px 8px;align-self:flex-start}
+.mode b{font-size:21px;font-family:var(--font-display)}
+.mode .ex{font-size:15px;color:var(--muted)}
+.mode.review .tag{background:var(--bad)}
+.mode.parent .tag{background:var(--good)}
+.mode.mix .tag{background:var(--star);color:var(--ink)}
+.mode[disabled]{opacity:.5;cursor:not-allowed;transform:none;background:var(--card)}
+.section-gap{display:flex;flex-direction:column;gap:18px}
+
+/* 作答畫面 */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.ghost{background:none;border:2px solid var(--ink);border-radius:10px;padding:6px 14px;font-size:16px;font-weight:500}
+.ghost:hover{background:var(--accent-soft)}
+.progress{flex:1;min-width:160px;display:flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums;font-weight:700}
+.bar{flex:1;height:12px;border:2px solid var(--ink);border-radius:999px;overflow:hidden;background:var(--card)}
+.bar i{display:block;height:100%;background:var(--good);transition:width .3s}
+.q-title{font-size:20px;font-weight:700;margin:0 0 16px;text-align:center}
+.word{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 22px}
+.cell{display:flex;align-items:center;gap:6px;background:var(--card)}
+.ch{width:92px;height:92px;display:grid;place-items:center;font-family:var(--font-display);font-size:62px;line-height:1;border:2px solid var(--bad);position:relative;
+  background-image:linear-gradient(90deg,transparent calc(50% - .5px),rgba(210,63,63,.35) calc(50% - .5px),rgba(210,63,63,.35) calc(50% + .5px),transparent calc(50% + .5px)),linear-gradient(transparent calc(50% - .5px),rgba(210,63,63,.35) calc(50% - .5px),rgba(210,63,63,.35) calc(50% + .5px),transparent calc(50% + .5px));}
+.zy{writing-mode:vertical-rl;text-orientation:upright;font-family:var(--font-body);font-size:24px;font-weight:500;letter-spacing:-2px;min-height:92px;display:flex;align-items:center;justify-content:center;min-width:28px}
+.zy-only .zy{font-size:34px;min-width:40px;min-height:120px}
+.cell.target .ch{background-color:#fff6d8}
+.cell.target .zy{color:var(--bad);font-weight:700}
+.blank{color:var(--bad)}
+.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.options.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+.opt{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px 10px;font-size:24px;font-weight:500;min-height:72px;display:flex;align-items:center;justify-content:center;gap:4px;flex-direction:column;box-shadow:3px 3px 0 var(--ink);transition:transform .08s}
+.opt:hover:not([disabled]){background:var(--accent-soft)}
+.opt:active:not([disabled]){transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.opt.word-opt{font-family:var(--font-display);font-size:34px}
+.opt.big{font-size:44px}
+.opt small{font-size:14px;color:var(--muted)}
+.opt[disabled]{cursor:default}
+.opt.right{background:var(--good-soft);border-color:var(--good);box-shadow:3px 3px 0 var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);box-shadow:3px 3px 0 var(--bad);text-decoration:line-through;text-decoration-color:var(--bad)}
+.feedback{margin-top:18px;border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.feedback.ok{background:var(--good-soft);border:2px solid var(--good)}
+.feedback.no{background:var(--bad-soft);border:2px solid var(--bad)}
+.feedback .msg{font-size:20px;font-weight:700}
+.feedback .ans{font-size:18px}
+.feedback .ans .w{font-family:var(--font-display);font-size:26px;margin-right:8px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:2px solid var(--ink);border-radius:12px;padding:10px 20px;font-size:18px;font-weight:700;background:var(--accent);color:#fff;box-shadow:3px 3px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.light{background:var(--card);color:var(--ink)}
+.btn svg{width:20px;height:20px;vertical-align:-4px;margin-right:4px}
+.streak{text-align:center;font-weight:700;color:var(--star);min-height:28px;margin-top:10px}
+
+/* 結果 */
+.result{text-align:center}
+.big-score{font-family:var(--font-display);font-size:72px;line-height:1;margin:10px 0;font-variant-numeric:tabular-nums}
+.star-row{display:flex;justify-content:center;gap:6px;margin:10px 0 18px}
+.star-row svg{width:44px;height:44px}
+.wrong-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 20px}
+.chip{border:2px solid var(--bad);background:var(--bad-soft);border-radius:999px;padding:2px 12px;font-size:16px}
+.chip .w{font-family:var(--font-display);font-size:20px;margin-right:6px}
+
+/* 家長區 */
+textarea{width:100%;min-height:140px;border:2px solid var(--ink);border-radius:12px;padding:12px;font-size:20px;font-family:var(--font-body);resize:vertical;background:#fff;color:var(--ink)}
+.kb{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.kb button{width:42px;height:42px;border:2px solid var(--ink);border-radius:8px;background:#fff;font-size:20px;padding:0}
+.kb button:hover{background:var(--accent-soft)}
+.kb .wide{width:auto;padding:0 12px;font-size:15px}
+.kb .tone{background:#fff6d8}
+.hint{font-size:15px;color:var(--muted)}
+.err{color:var(--bad);font-size:16px;white-space:pre-line}
+.okmsg{color:var(--good);font-size:16px;font-weight:700}
+.mylist{display:flex;flex-wrap:wrap;gap:8px}
+.mychip{display:flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:10px;padding:4px 6px 4px 12px;background:#fff}
+.mychip .w{font-family:var(--font-display);font-size:22px}
+.mychip .z{font-size:14px;color:var(--muted)}
+.mychip button{border:0;background:var(--bad-soft);color:var(--bad);border-radius:6px;font-size:14px;padding:2px 8px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:17px}
+.toggle input{width:22px;height:22px}
+.foot{text-align:center;color:var(--muted);font-size:14px;margin-top:22px}
+[hidden]{display:none !important}
+
+@media (max-width:520px){
+  .ch{width:72px;height:72px;font-size:48px}
+  .zy{font-size:20px;min-height:72px}
+  .options.five{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .panel{padding:18px}
+  .brand h1{font-size:26px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+.pop{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+
+/* 直式注音：聲調在最後一個符號右上方 */
+.zy{writing-mode:horizontal-tb;display:flex;flex-direction:column;align-items:center;justify-content:center;letter-spacing:0;line-height:1.02;padding-right:.55em;min-height:92px}
+.zy .z{display:block;position:relative}
+.zy .t{position:absolute;left:100%;top:-.22em;font-size:1em;line-height:1;margin-left:.02em}
+.zy .dot{display:block;line-height:.55;font-size:1em}
+.zy-only .zy{min-height:120px}
+
+/* 學生登入與老師後台 */
+.who{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.me{display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:4px 6px 4px 14px;font-weight:700}
+.me button{border:0;background:var(--accent-soft);border-radius:999px;padding:2px 10px;font-size:14px}
+.login{max-width:460px;margin:0 auto}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:700}
+.field input{border:2px solid var(--ink);border-radius:12px;padding:12px 14px;font-size:24px;font-family:var(--font-body);color:var(--ink);background:#fff;width:100%}
+.row2{display:grid;grid-template-columns:120px 1fr;gap:12px}
+.linkbtn{background:none;border:0;color:var(--accent);text-decoration:underline;font-size:15px;padding:4px}
+.sent{font-size:15px;color:var(--muted);margin:6px 0 14px}
+.tbl-wrap{overflow-x:auto;border:2px solid var(--ink);border-radius:12px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:16px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+th{background:var(--accent-soft);font-size:15px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num{white-space:nowrap}
+.rate{display:inline-block;min-width:52px;text-align:center;border-radius:999px;padding:0 8px;font-weight:700}
+.rate.hi{background:var(--good-soft);color:var(--good)}
+.rate.mid{background:#fff3d6;color:#9a6400}
+.rate.lo{background:var(--bad-soft);color:var(--bad)}
+.weak{display:flex;flex-wrap:wrap;gap:6px}
+.wchip{border:1.5px solid var(--bad);background:var(--bad-soft);border-radius:8px;padding:0 8px;font-size:15px;white-space:nowrap}
+.wchip.done{border-color:var(--grid);background:#f3f6f4;color:var(--muted)}
+.wchip .w{font-family:var(--font-display);font-size:18px;margin-right:4px}
+.wchip b{color:var(--bad);margin-left:4px}
+.legend{font-size:14px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.top{display:flex;flex-wrap:wrap;gap:8px}
+.topchip{border:2px solid var(--ink);border-radius:10px;background:#fff;padding:4px 10px}
+.topchip .w{font-family:var(--font-display);font-size:22px;margin-right:6px}
+.topchip small{color:var(--muted)}
+.notice{background:#fff6d8;border:2px solid var(--star);border-radius:12px;padding:12px 14px;font-size:16px}
+.foot .linkbtn{font-size:14px}
+
+.sound-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.sound-grid h4{margin:0 0 6px;font-size:16px;color:var(--muted)}
+.topchip.snd{display:flex;align-items:center;gap:10px}
+.pair{display:inline-flex;align-items:center;gap:6px;font-size:22px}
+.pair .arr{font-size:13px;color:var(--muted)}
+.pair .bad{color:var(--bad)}
+.schip{border:1.5px solid var(--ink);border-radius:8px;padding:0 8px;font-size:15px;white-space:nowrap;background:#fff}
+.schip .arr{color:var(--muted);margin:0 3px}
+.schip b{color:var(--bad);margin-left:4px}
+.listen-row{display:flex;justify-content:center;margin:-8px 0 18px}
+.btn.listen{font-size:20px;padding:10px 24px;border-radius:999px;background:#fff6d8}
+.btn.listen svg{width:24px;height:24px}
+
+.heard{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5}
+.ear{display:inline-block;background:#fff6d8;border:1.5px solid var(--star);color:#8a5a00;border-radius:4px;font-size:11px;padding:0 3px;margin-right:3px;font-weight:700}
+
+.opt.zy-opt{min-height:120px;padding:12px 8px}
+.optzy{display:flex;align-items:center;justify-content:center;gap:10px}
+.optzy .zy{font-size:26px;min-height:0;min-width:0}
+.opt.wrong .optzy{opacity:.55}
+.opt.zy-opt.wrong{text-decoration:none}
+
+/* 小型國字＋直式注音 */
+.mini{display:inline-flex;align-items:center;gap:4px;vertical-align:middle}
+.mc{display:inline-flex;align-items:center;gap:1px}
+.mch{font-family:var(--font-display);font-size:1.5em;line-height:1}
+.mini .zy{font-size:.75em;min-height:0;min-width:0;line-height:1;padding-right:.6em}
+.feedback .ans{font-size:28px;margin-top:4px}
+.chip{display:inline-flex;align-items:center;padding:4px 12px;border-radius:12px;font-size:20px}
+.mychip .mini{font-size:18px}
+.topchip{display:inline-flex;align-items:center;gap:8px;font-size:18px}
+.wchip{display:inline-flex;align-items:center;gap:4px;font-size:15px;padding:3px 8px}
+.exzy .optzy{display:inline-flex;gap:4px;vertical-align:middle}
+.exzy .zy{font-size:15px;min-height:0;min-width:0;line-height:1}
+.ex{line-height:1.9}
+
+/* 老師錄音 */
+.rec-steps{margin:0;padding-left:22px;font-size:16px;color:var(--muted);display:grid;gap:2px}
+.rec-list{display:flex;flex-direction:column;border:2px solid var(--ink);border-radius:12px;background:#fff;overflow:hidden}
+.rec-row{display:grid;grid-template-columns:minmax(120px,1fr) auto minmax(0,2fr);align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--grid)}
+.rec-row:last-child{border-bottom:0}
+.rec-word .mini{font-size:20px}
+.pill{font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;background:#eef1f3;color:var(--muted);white-space:nowrap}
+.pill.on{background:var(--good-soft);color:var(--good)}
+.rec-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.rec-btns .btn{font-size:15px;padding:6px 14px;box-shadow:2px 2px 0 var(--ink)}
+.btn.rec-on{background:var(--bad)}
+.btn.danger{color:var(--bad)}
+@media (max-width:620px){.rec-row{grid-template-columns:1fr auto}.rec-btns{grid-column:1/-1;justify-content:flex-start}}
+
+/* 診斷報告 */
+.phase-box{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--accent-soft);border-radius:12px;padding:10px 14px}
+.phase-box .toggle input{width:20px;height:20px}
+.pbar{display:inline-block;width:110px;height:10px;border-radius:999px;background:#eef1f3;vertical-align:middle;overflow:hidden;margin-right:8px}
+.pbar i{display:block;height:100%}
+.pbar i.hi{background:var(--good)} .pbar i.mid{background:var(--star)} .pbar i.lo{background:var(--bad)}
+.pnum{font-variant-numeric:tabular-nums;font-weight:700}
+.sk{font-size:18px;font-weight:700}
+b.up{color:var(--good)} b.down{color:var(--bad)}
+.dmat th.skh{text-align:center;font-size:16px;padding:8px 6px}
+.dmat td{text-align:center;padding:8px 6px}
+.dmat td:first-child{text-align:left}
+.dc{display:inline-block;min-width:34px;border-radius:8px;padding:1px 6px;font-weight:700;font-variant-numeric:tabular-nums;background:#eef1f3;font-size:15px}
+.dc.full{background:var(--good-soft);color:var(--good)}
+.dc.half{background:#fff3d6;color:#9a6400}
+.dc.none{background:var(--bad-soft);color:var(--bad)}
+
+/* 班級 */
+.class-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.class-btn{align-items:center;text-align:center;padding:18px}
+.class-btn b{font-size:22px}
+.class-line{margin:0;font-size:17px}
+
+.class-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px}
+.class-bar select{font-size:18px;padding:6px 10px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);font-family:var(--font-body)}
+.cls-tag{font-size:12px;color:var(--muted);font-weight:400}
+.cls-name{font-size:18px;color:var(--muted);font-weight:400}
+.add-class{display:flex;gap:10px;flex-wrap:wrap}
+.add-class input,.cm-input{flex:1;min-width:200px;border:2px solid var(--ink);border-radius:10px;padding:8px 12px;font-size:18px;font-family:var(--font-body);color:var(--ink)}
+.class-mgr{display:flex;flex-direction:column;border:2px solid var(--ink);border-radius:12px;background:#fff;overflow:hidden}
+.cm-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--grid);flex-wrap:wrap}
+.cm-row:last-child{border-bottom:0}
+.cm-name{display:flex;flex-direction:column;flex:1;min-width:180px}
+.cm-name b{font-size:19px}
+.qr-sheet{border:2px dashed var(--ink);border-radius:14px;padding:20px;background:#fff;text-align:center}
+.qr-sheet h3{font-family:var(--font-display);font-size:30px;margin:0 0 12px}
+.qr-pair{display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+.qr-pair figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.qr-box{width:220px;height:220px;border:4px solid var(--accent);border-radius:12px;padding:6px;background:#fff}
+.qr-box.diag{border-color:#0f766e}
+.qr-box svg{width:100%;height:100%;display:block}
+.qr-pair figcaption{display:flex;flex-direction:column}
+.qr-pair figcaption b{font-size:20px}
+.qr-pair figcaption span{font-size:14px;color:var(--muted)}
+.qr-note{margin:14px 0 0;color:var(--muted)}
+@media print{
+  body.print-qr{background:#fff}
+  body.print-qr *{visibility:hidden}
+  body.print-qr #qrSheet, body.print-qr #qrSheet *{visibility:visible}
+  body.print-qr #qrSheet{position:absolute;left:0;top:0;width:100%;border:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button class="brand" id="homeBtn" aria-label="回首頁">
+      <span class="brand-mark">ㄅ</span>
+      <span><h1>注音小學堂</h1><small>三年級在家自己練習</small></span>
+    </button>
+    <div class="who">
+      <div class="me" id="meBox" hidden><span id="meName"></span><button id="switchBtn">換人</button></div>
+      <div class="stars" title="累積的星星" id="starBox" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f0a91e" stroke="#1c3553" stroke-width="1.5" d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg>
+        <span id="starCount">0</span> 顆星
+      </div>
+    </div>
+  </header>
+
+  <!-- 選班級 -->
+  <section id="pickClass" hidden>
+    <div class="panel login section-gap">
+      <div><h2>你是哪一班？</h2><p class="lead" style="margin:0">點你的班級。下次掃班上的 QR Code 就不用再選了。</p></div>
+      <div class="class-list" id="classList"></div>
+    </div>
+  </section>
+
+  <!-- 登入 -->
+  <section id="login" hidden>
+    <form class="panel login section-gap" id="loginForm" novalidate>
+      <div>
+        <h2>你好！你是誰？</h2>
+        <p class="lead" style="margin:0">寫上你的名字，老師就知道你練習了哪些題目。</p>
+      </div>
+      <p class="class-line" id="classLine"></p>
+      <div class="field"><label for="nameIn">名字</label><input id="nameIn" maxlength="10" autocomplete="off" placeholder="王小明"></div>
+      <p class="err" id="loginErr" aria-live="polite" style="margin:0"></p>
+      <button class="btn" type="submit" style="font-size:22px;padding:12px">開始練習</button>
+    </form>
+  </section>
+
+  <!-- 首頁 -->
+  <section id="home" class="section-gap" hidden>
+    <div class="panel">
+      <h2 id="hello">今天想練什麼？</h2>
+      <p class="lead">每一回 10 題，答對一題得一顆星。答錯的題目會記下來，之後可以再練一次。</p>
+      <div class="notice" id="classNotice" hidden></div>
+      <div class="modes" style="margin-top:14px">
+        <button class="mode" data-mode="m1"><span class="tag">看字選注音</span><b>這個字怎麼拼？</b><span class="ex">看到「蝴蝶」，選出 <span class="exzy" data-zy="ㄏㄨˊ ㄉㄧㄝˊ"></span></span></button>
+        <button class="mode" data-mode="m2"><span class="tag">看注音選字</span><b>這是哪個詞？</b><span class="ex">看到 <span class="exzy" data-zy="ㄆㄧㄥˊ ㄍㄨㄛˇ"></span>，選出「蘋果」</span></button>
+        <button class="mode" data-mode="m3"><span class="tag">聲調練習</span><b>第幾聲？</b><span class="ex">一聲、二聲、三聲、四聲，還是輕聲</span></button>
+        <button class="mode" data-mode="m4"><span class="tag">易混淆音</span><b>ㄓ 還是 ㄗ？</b><span class="ex">ㄓㄗ、ㄔㄘ、ㄕㄙ、ㄣㄥ、ㄢㄤ、ㄋㄌ、ㄈㄏ</span></button>
+        <button class="mode mix" data-mode="mix"><span class="tag">綜合挑戰</span><b>四種題型混在一起</b><span class="ex">考前複習最適合</span></button>
+        <button class="mode review" data-mode="review" id="reviewCard"><span class="tag">錯題複習</span><b>再練一次</b><span class="ex" id="reviewInfo">目前沒有錯題</span></button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="modes">
+        <button class="mode parent" id="parentBtn"><span class="tag">家長區</span><b>在這台加入字詞</b><span class="ex" id="customInfo">只會出現在這台 iPad</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 作答 -->
+  <section id="quiz" hidden>
+    <div class="topbar">
+      <button class="ghost" id="quitBtn">← 回首頁</button>
+      <div class="progress"><span id="progText">第 1 / 10 題</span><div class="bar"><i id="progBar" style="width:0%"></i></div></div>
+    </div>
+    <div class="panel" id="qPanel">
+      <p class="q-title" id="qTitle"></p>
+      <div id="qWord"></div>
+      <div class="listen-row"><button class="btn light listen" id="qSay" type="button"></button></div>
+      <div id="qOptions"></div>
+      <div id="qFeedback"></div>
+      <div class="streak" id="streak" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 結果 -->
+  <section id="result" hidden>
+    <div class="panel result">
+      <h2 id="rTitle">完成了！</h2>
+      <div class="big-score" id="rScore">8 / 10</div>
+      <div class="star-row" id="rStars"></div>
+      <p class="sent" id="rSent"></p>
+      <div id="rWrong"></div>
+      <div class="actions" style="justify-content:center">
+        <button class="btn" id="againBtn">再玩一回</button>
+        <button class="btn light" id="rReviewBtn">練習錯題</button>
+        <button class="btn light" id="rHomeBtn">回首頁</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 家長區 -->
+  <section id="parent" hidden>
+    <div class="topbar"><button class="ghost" id="parentBack">← 回首頁</button></div>
+    <div class="panel section-gap">
+      <div>
+        <h2>在這台 iPad 加入字詞</h2>
+        <p class="lead" style="margin-bottom:8px">一行一個詞：先寫國字，空一格，再寫每個字的注音（每個字的注音之間也空一格）。輕聲的「˙」寫在最前面。這裡加的字詞只會出現在這台 iPad；要給全班練習，請老師在老師後台設定。</p>
+        <p class="hint">例如：<br>蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ<br>桌子 ㄓㄨㄛ ˙ㄗ</p>
+      </div>
+      <div>
+        <label for="customInput" class="hint">可以用下面的注音鍵盤輸入，也可以直接打字或貼上</label>
+        <textarea id="customInput" placeholder="蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ"></textarea>
+        <div class="kb" data-for="customInput"></div>
+        <div class="actions"><button class="btn" id="addBtn">加入題庫</button></div>
+        <p class="err" id="addErr" aria-live="polite"></p>
+        <p class="okmsg" id="addOk" aria-live="polite"></p>
+      </div>
+      <div>
+        <h2 style="font-size:22px">這台加的字詞（<span id="myCount">0</span>）</h2>
+        <label class="toggle"><input type="checkbox" id="onlyMine"> 只練習這些字詞</label>
+        <p class="hint" style="margin:4px 0 10px">勾選後，所有題型都只會出這些詞（至少要有 4 個詞）。</p>
+        <div class="mylist" id="myList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 老師後台 -->
+  <section id="teacher" hidden>
+    <div class="topbar"><button class="ghost" id="teacherBack">← 離開老師後台</button></div>
+    <form class="panel login section-gap" id="tLogin" novalidate>
+      <div><h2>老師後台</h2><p class="lead" style="margin:0">輸入老師密碼，就能看到全班的練習紀錄和錯題。</p></div>
+      <div class="field"><label for="tCode">老師密碼</label><input id="tCode" type="password" autocomplete="off"></div>
+      <p class="err" id="tErr" aria-live="polite" style="margin:0"></p>
+      <button class="btn" type="submit">進入後台</button>
+    </form>
+    <div id="tMain" class="section-gap" hidden>
+      <div class="panel class-bar">
+        <label for="tClass" style="font-weight:700">查看班級</label>
+        <select id="tClass"></select>
+        <span class="hint" id="tClassHint"></span>
+      </div>
+      <div class="panel section-gap">
+        <div class="topbar" style="margin:0">
+          <div><h2 style="margin:0">全班練習狀況</h2><span class="hint" id="tUpdated"></span></div>
+          <button class="btn light" id="tRefresh">重新整理</button>
+        </div>
+        <div>
+          <h3 style="margin:0 0 8px;font-size:18px">全班最常錯的詞</h3>
+          <div class="top" id="tTop"></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 4px;font-size:18px">全班常錯的音</h3>
+          <p class="hint" style="margin:0 0 8px">左邊是正確的音，右邊是學生選成的音。統計來自「看字選注音」、「聲調」、「易混淆音」三種題型。</p>
+          <div class="sound-grid">
+            <div><h4>易混淆音</h4><div class="top" id="tSoundLetters"></div></div>
+            <div><h4>聲調</h4><div class="top" id="tSoundTones"></div></div>
+          </div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 8px;font-size:18px">每位學生</h3>
+          <div class="legend"><span><span class="wchip"><span class="w">字</span><b>×2</b></span> 還沒練會（最後一次還是錯）</span><span><span class="wchip done"><span class="w">字</span></span> 曾經錯，後來答對了</span><span><span class="ear">聽</span> 作答前先按了「聽聽看」才答對</span></div>
+          <div class="tbl-wrap" style="margin-top:8px"><table>
+            <thead><tr><th>姓名</th><th>練習題數</th><th>答對率</th><th>最近練習</th><th>常錯的音</th><th>錯過的詞</th></tr></thead>
+            <tbody id="tBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="panel section-gap" id="diagPanel">
+        <div class="topbar" style="margin:0">
+          <div><h2 style="margin:0">診斷報告</h2><span class="hint">資料來自「注音診斷站」，每位學生的前測、後測各取最近一次。</span></div>
+        </div>
+        <div class="phase-box">
+          <span style="font-weight:700">注音診斷站現在開放<span id="phaseClassName"></span>：</span>
+          <label class="toggle"><input type="radio" name="dphase" value="前測"> 前測</label>
+          <label class="toggle"><input type="radio" name="dphase" value="後測"> 後測</label>
+          <label class="toggle"><input type="radio" name="dphase" value="關閉"> 關閉</label>
+          <button class="btn light" id="savePhase" style="font-size:15px;padding:6px 14px">儲存</button>
+          <span class="okmsg" id="phaseOk" aria-live="polite"></span>
+        </div>
+        <div>
+          <h3 style="margin:0 0 8px;font-size:18px">全班各項能力</h3>
+          <div class="tbl-wrap"><table class="skill-tbl"><thead><tr><th>能力</th><th>前測答對率</th><th>後測答對率</th><th>進步</th></tr></thead><tbody id="dSkills"></tbody></table></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 4px;font-size:18px">每位學生</h3>
+          <div class="legend"><span><span class="dc full">2</span> 全對</span><span><span class="dc half">1</span> 對一部分</span><span><span class="dc none">0</span> 全錯</span><span><span class="dc">1→2</span> 前測→後測答對題數</span><span><span class="ear">聽</span> 作答前有按「聽聽看」的題數</span></div>
+          <div class="tbl-wrap" style="margin-top:8px"><table class="dmat"><thead id="dHead"></thead><tbody id="dBody"></tbody></table></div>
+        </div>
+        <p class="err" id="diagErr" aria-live="polite" style="margin:0"></p>
+      </div>
+      <div class="panel section-gap" id="classPanel">
+        <div>
+          <h2>班級管理</h2>
+          <p class="lead" style="margin:0">每個班級有自己的 QR Code。學生掃自己班的 QR Code，資料就會自動分到那一班，只要輸入名字。</p>
+        </div>
+        <div class="add-class">
+          <input id="newClassName" maxlength="30" placeholder="例如：王老師・三年二班" aria-label="新班級名稱">
+          <button class="btn" id="addClassBtn">新增班級</button>
+        </div>
+        <p class="err" id="classMgrErr" aria-live="polite" style="margin:0"></p>
+        <div class="class-mgr" id="classMgr"></div>
+        <div id="qrView" hidden></div>
+      </div>
+      <div class="panel section-gap">
+        <div>
+          <h2>全班字詞 <span class="cls-name" id="wordsClassName"></span></h2>
+          <p class="notice" id="wordsNeedClass" hidden>請先在最上面「查看班級」選一個班級，再設定那一班的字詞。</p>
+          <p class="lead" style="margin:0">這裡設定的字詞，每個學生的 iPad 打開網站時都會自動拿到。格式和家長區一樣：一行一個詞，國字、空格、注音。</p>
+        </div>
+        <div id="wordsEditor" class="section-gap">
+        <textarea id="classInput" placeholder="蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ"></textarea>
+        <div class="kb" data-for="classInput"></div>
+        <label class="toggle"><input type="checkbox" id="onlyClass"> 全班只練習這些字詞（至少 4 個詞）</label>
+        <div class="actions"><button class="btn" id="saveClass">儲存全班字詞</button></div>
+        <p class="err" id="classErr" aria-live="polite"></p>
+        <p class="okmsg" id="classOk" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="panel section-gap">
+        <div>
+          <h2>老師錄音</h2>
+          <p class="lead" style="margin:0">iPad 內建語音常把輕聲唸錯，例如把「媽媽」的第二個字唸成一聲。在這裡錄下你自己的聲音，學生按「聽聽看」時就會播放你的錄音；沒有錄音的詞，照樣用 iPad 語音。</p>
+        </div>
+        <ol class="rec-steps">
+          <li>按「錄音」，第一次會問能不能用麥克風，請按「允許」。</li>
+          <li>清楚唸一次這個詞，唸完按「停止」（3 秒後也會自動停止）。</li>
+          <li>聽一下錄音，滿意就按「儲存」，不滿意按「重錄」。</li>
+        </ol>
+        <div class="topbar" style="margin:0">
+          <label class="toggle"><input type="checkbox" id="recOnlyLight" checked> 只顯示有輕聲的詞</label>
+          <span class="hint" id="recCount"></span>
+        </div>
+        <p class="err" id="recErr" aria-live="polite" style="margin:0"></p>
+        <div class="rec-list" id="recList"></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">星星和錯題複習存在這台 iPad；作答紀錄會送給老師。朗讀使用瀏覽器內建語音。<br><button class="linkbtn" id="teacherLink">老師後台</button></p>
+</div>
+
+<script>
+const RAW = `
+蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ
+蘋果 ㄆㄧㄥˊ ㄍㄨㄛˇ
+學校 ㄒㄩㄝˊ ㄒㄧㄠˋ
+老師 ㄌㄠˇ ㄕ
+同學 ㄊㄨㄥˊ ㄒㄩㄝˊ
+太陽 ㄊㄞˋ ㄧㄤˊ
+星星 ㄒㄧㄥ ㄒㄧㄥ
+天空 ㄊㄧㄢ ㄎㄨㄥ
+花園 ㄏㄨㄚ ㄩㄢˊ
+小狗 ㄒㄧㄠˇ ㄍㄡˇ
+小貓 ㄒㄧㄠˇ ㄇㄠ
+大象 ㄉㄚˋ ㄒㄧㄤˋ
+長頸鹿 ㄔㄤˊ ㄐㄧㄥˇ ㄌㄨˋ
+老虎 ㄌㄠˇ ㄏㄨˇ
+獅子 ㄕ ˙ㄗ
+兔子 ㄊㄨˋ ˙ㄗ
+熊貓 ㄒㄩㄥˊ ㄇㄠ
+企鵝 ㄑㄧˋ ㄜˊ
+西瓜 ㄒㄧ ㄍㄨㄚ
+香蕉 ㄒㄧㄤ ㄐㄧㄠ
+草莓 ㄘㄠˇ ㄇㄟˊ
+牛奶 ㄋㄧㄡˊ ㄋㄞˇ
+麵包 ㄇㄧㄢˋ ㄅㄠ
+早餐 ㄗㄠˇ ㄘㄢ
+鉛筆 ㄑㄧㄢ ㄅㄧˇ
+書包 ㄕㄨ ㄅㄠ
+黑板 ㄏㄟ ㄅㄢˇ
+教室 ㄐㄧㄠˋ ㄕˋ
+作業 ㄗㄨㄛˋ ㄧㄝˋ
+考試 ㄎㄠˇ ㄕˋ
+圖書館 ㄊㄨˊ ㄕㄨ ㄍㄨㄢˇ
+公園 ㄍㄨㄥ ㄩㄢˊ
+運動 ㄩㄣˋ ㄉㄨㄥˋ
+游泳 ㄧㄡˊ ㄩㄥˇ
+跑步 ㄆㄠˇ ㄅㄨˋ
+唱歌 ㄔㄤˋ ㄍㄜ
+跳舞 ㄊㄧㄠˋ ㄨˇ
+快樂 ㄎㄨㄞˋ ㄌㄜˋ
+高興 ㄍㄠ ㄒㄧㄥˋ
+勇敢 ㄩㄥˇ ㄍㄢˇ
+認真 ㄖㄣˋ ㄓㄣ
+安靜 ㄢ ㄐㄧㄥˋ
+颱風 ㄊㄞˊ ㄈㄥ
+下雨 ㄒㄧㄚˋ ㄩˇ
+彩虹 ㄘㄞˇ ㄏㄨㄥˊ
+森林 ㄙㄣ ㄌㄧㄣˊ
+河流 ㄏㄜˊ ㄌㄧㄡˊ
+海洋 ㄏㄞˇ ㄧㄤˊ
+眼睛 ㄧㄢˇ ˙ㄐㄧㄥ
+耳朵 ㄦˇ ˙ㄉㄨㄛ
+嘴巴 ㄗㄨㄟˇ ˙ㄅㄚ
+爸爸 ㄅㄚˋ ˙ㄅㄚ
+媽媽 ㄇㄚ ˙ㄇㄚ
+姊姊 ㄐㄧㄝˇ ˙ㄐㄧㄝ
+弟弟 ㄉㄧˋ ˙ㄉㄧ
+桌子 ㄓㄨㄛ ˙ㄗ
+帽子 ㄇㄠˋ ˙ㄗ
+襪子 ㄨㄚˋ ˙ㄗ
+謝謝 ㄒㄧㄝˋ ˙ㄒㄧㄝ
+冰箱 ㄅㄧㄥ ㄒㄧㄤ
+電腦 ㄉㄧㄢˋ ㄋㄠˇ
+飛機 ㄈㄟ ㄐㄧ
+火車 ㄏㄨㄛˇ ㄔㄜ
+腳踏車 ㄐㄧㄠˇ ㄊㄚˋ ㄔㄜ
+醫生 ㄧ ㄕㄥ
+警察 ㄐㄧㄥˇ ㄔㄚˊ
+生日 ㄕㄥ ㄖˋ
+禮物 ㄌㄧˇ ㄨˋ
+蛋糕 ㄉㄢˋ ㄍㄠ
+春天 ㄔㄨㄣ ㄊㄧㄢ
+夏天 ㄒㄧㄚˋ ㄊㄧㄢ
+秋天 ㄑㄧㄡ ㄊㄧㄢ
+冬天 ㄉㄨㄥ ㄊㄧㄢ
+螞蟻 ㄇㄚˇ ㄧˇ
+蜜蜂 ㄇㄧˋ ㄈㄥ
+青蛙 ㄑㄧㄥ ㄨㄚ
+烏龜 ㄨ ㄍㄨㄟ
+金魚 ㄐㄧㄣ ㄩˊ
+橡皮擦 ㄒㄧㄤˋ ㄆㄧˊ ㄘㄚ
+房間 ㄈㄤˊ ㄐㄧㄢ
+廚房 ㄔㄨˊ ㄈㄤˊ
+再見 ㄗㄞˋ ㄐㄧㄢˋ
+`;
+
+// QR Code 產生器（原作者 Kazuhiko Arase，MIT License）
+const QRLib=(function(){const M={};function req(n){n=n.replace('./','').replace('.js','');const m=M[n];if(!m.loaded){m.loaded=true;m.fn(m.module={exports:{}},m.module.exports);m.exp=m.module.exports;}return m.exp;}
+M['QRErrorCorrectLevel']={fn:function(module,exports){var require=req;
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+}};
+M['QRPolynomial']={fn:function(module,exports){var require=req;
+var QRMath = require('./QRMath');
+
+function QRPolynomial(num, shift) {
+	if (num.length === undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] === 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var x = 0; x < e.getLength(); x++) {
+			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+}};
+M['QRMaskPattern']={fn:function(module,exports){var require=req;
+module.exports = {
+	PATTERN000 : 0,
+	PATTERN001 : 1,
+	PATTERN010 : 2,
+	PATTERN011 : 3,
+	PATTERN100 : 4,
+	PATTERN101 : 5,
+	PATTERN110 : 6,
+	PATTERN111 : 7
+};
+
+}};
+M['QRMode']={fn:function(module,exports){var require=req;
+module.exports = {
+    MODE_NUMBER :       1 << 0,
+    MODE_ALPHA_NUM :    1 << 1,
+    MODE_8BIT_BYTE :    1 << 2,
+    MODE_KANJI :        1 << 3
+};
+
+}};
+M['QRUtil']={fn:function(module,exports){var require=req;
+var QRMode = require('./QRMode');
+var QRPolynomial = require('./QRPolynomial');
+var QRMath = require('./QRMath');
+var QRMaskPattern = require('./QRMaskPattern');
+
+var QRUtil = {
+
+    PATTERN_POSITION_TABLE : [
+        [],
+        [6, 18],
+        [6, 22],
+        [6, 26],
+        [6, 30],
+        [6, 34],
+        [6, 22, 38],
+        [6, 24, 42],
+        [6, 26, 46],
+        [6, 28, 50],
+        [6, 30, 54],        
+        [6, 32, 58],
+        [6, 34, 62],
+        [6, 26, 46, 66],
+        [6, 26, 48, 70],
+        [6, 26, 50, 74],
+        [6, 30, 54, 78],
+        [6, 30, 56, 82],
+        [6, 30, 58, 86],
+        [6, 34, 62, 90],
+        [6, 28, 50, 72, 94],
+        [6, 26, 50, 74, 98],
+        [6, 30, 54, 78, 102],
+        [6, 28, 54, 80, 106],
+        [6, 32, 58, 84, 110],
+        [6, 30, 58, 86, 114],
+        [6, 34, 62, 90, 118],
+        [6, 26, 50, 74, 98, 122],
+        [6, 30, 54, 78, 102, 126],
+        [6, 26, 52, 78, 104, 130],
+        [6, 30, 56, 82, 108, 134],
+        [6, 34, 60, 86, 112, 138],
+        [6, 30, 58, 86, 114, 142],
+        [6, 34, 62, 90, 118, 146],
+        [6, 30, 54, 78, 102, 126, 150],
+        [6, 24, 50, 76, 102, 128, 154],
+        [6, 28, 54, 80, 106, 132, 158],
+        [6, 32, 58, 84, 110, 136, 162],
+        [6, 26, 54, 82, 110, 138, 166],
+        [6, 30, 58, 86, 114, 142, 170]
+    ],
+
+    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
+    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
+    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
+
+    getBCHTypeInfo : function(data) {
+        var d = data << 10;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
+            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
+        }
+        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+
+    getBCHTypeNumber : function(data) {
+        var d = data << 12;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
+        }
+        return (data << 12) | d;
+    },
+
+    getBCHDigit : function(data) {
+
+        var digit = 0;
+
+        while (data !== 0) {
+            digit++;
+            data >>>= 1;
+        }
+
+        return digit;
+    },
+
+    getPatternPosition : function(typeNumber) {
+        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
+    },
+
+    getMask : function(maskPattern, i, j) {
+        
+        switch (maskPattern) {
+            
+        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
+        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
+        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
+        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
+        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
+        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
+        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
+        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
+
+        default :
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+    },
+
+    getErrorCorrectPolynomial : function(errorCorrectLength) {
+
+        var a = new QRPolynomial([1], 0);
+
+        for (var i = 0; i < errorCorrectLength; i++) {
+            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
+        }
+
+        return a;
+    },
+
+    getLengthInBits : function(mode, type) {
+
+        if (1 <= type && type < 10) {
+
+            // 1 - 9
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 10;
+            case QRMode.MODE_ALPHA_NUM  : return 9;
+            case QRMode.MODE_8BIT_BYTE  : return 8;
+            case QRMode.MODE_KANJI      : return 8;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 27) {
+
+            // 10 - 26
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 12;
+            case QRMode.MODE_ALPHA_NUM  : return 11;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 10;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 41) {
+
+            // 27 - 40
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 14;
+            case QRMode.MODE_ALPHA_NUM  : return 13;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 12;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else {
+            throw new Error("type:" + type);
+        }
+    },
+
+    getLostPoint : function(qrCode) {
+        
+        var moduleCount = qrCode.getModuleCount();
+        var lostPoint = 0;
+        var row = 0; 
+        var col = 0;
+
+        
+        // LEVEL1
+        
+        for (row = 0; row < moduleCount; row++) {
+
+            for (col = 0; col < moduleCount; col++) {
+
+                var sameCount = 0;
+                var dark = qrCode.isDark(row, col);
+
+                for (var r = -1; r <= 1; r++) {
+
+                    if (row + r < 0 || moduleCount <= row + r) {
+                        continue;
+                    }
+
+                    for (var c = -1; c <= 1; c++) {
+
+                        if (col + c < 0 || moduleCount <= col + c) {
+                            continue;
+                        }
+
+                        if (r === 0 && c === 0) {
+                            continue;
+                        }
+
+                        if (dark === qrCode.isDark(row + r, col + c) ) {
+                            sameCount++;
+                        }
+                    }
+                }
+
+                if (sameCount > 5) {
+                    lostPoint += (3 + sameCount - 5);
+                }
+            }
+        }
+
+        // LEVEL2
+
+        for (row = 0; row < moduleCount - 1; row++) {
+            for (col = 0; col < moduleCount - 1; col++) {
+                var count = 0;
+                if (qrCode.isDark(row,     col    ) ) count++;
+                if (qrCode.isDark(row + 1, col    ) ) count++;
+                if (qrCode.isDark(row,     col + 1) ) count++;
+                if (qrCode.isDark(row + 1, col + 1) ) count++;
+                if (count === 0 || count === 4) {
+                    lostPoint += 3;
+                }
+            }
+        }
+
+        // LEVEL3
+
+        for (row = 0; row < moduleCount; row++) {
+            for (col = 0; col < moduleCount - 6; col++) {
+                if (qrCode.isDark(row, col) && 
+                        !qrCode.isDark(row, col + 1) && 
+                         qrCode.isDark(row, col + 2) && 
+                         qrCode.isDark(row, col + 3) && 
+                         qrCode.isDark(row, col + 4) && 
+                        !qrCode.isDark(row, col + 5) && 
+                         qrCode.isDark(row, col + 6) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount - 6; row++) {
+                if (qrCode.isDark(row, col) &&
+                        !qrCode.isDark(row + 1, col) &&
+                         qrCode.isDark(row + 2, col) &&
+                         qrCode.isDark(row + 3, col) &&
+                         qrCode.isDark(row + 4, col) &&
+                        !qrCode.isDark(row + 5, col) &&
+                         qrCode.isDark(row + 6, col) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        // LEVEL4
+        
+        var darkCount = 0;
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount; row++) {
+                if (qrCode.isDark(row, col) ) {
+                    darkCount++;
+                }
+            }
+        }
+        
+        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        lostPoint += ratio * 10;
+
+        return lostPoint;       
+    }
+
+};
+
+module.exports = QRUtil;
+
+}};
+M['QRMath']={fn:function(module,exports){var require=req;
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+}};
+M['QR8bitByte']={fn:function(module,exports){var require=req;
+var QRMode = require('./QRMode');
+
+function QR8bitByte(data) {
+	this.mode = QRMode.MODE_8BIT_BYTE;
+	this.data = data;
+}
+
+QR8bitByte.prototype = {
+
+	getLength : function() {
+		return this.data.length;
+	},
+	
+	write : function(buffer) {
+		for (var i = 0; i < this.data.length; i++) {
+			// not JIS ...
+			buffer.put(this.data.charCodeAt(i), 8);
+		}
+	}
+};
+
+module.exports = QR8bitByte;
+
+}};
+M['index']={fn:function(module,exports){var require=req;
+//---------------------------------------------------------------------
+// QRCode for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+// The word "QR Code" is registered trademark of 
+// DENSO WAVE INCORPORATED
+//   http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+// Modified to work in node for this project (and some refactoring)
+//---------------------------------------------------------------------
+
+var QR8bitByte = require('./QR8bitByte');
+var QRUtil = require('./QRUtil');
+var QRPolynomial = require('./QRPolynomial');
+var QRRSBlock = require('./QRRSBlock');
+var QRBitBuffer = require('./QRBitBuffer');
+
+function QRCode(typeNumber, errorCorrectLevel) {
+	this.typeNumber = typeNumber;
+	this.errorCorrectLevel = errorCorrectLevel;
+	this.modules = null;
+	this.moduleCount = 0;
+	this.dataCache = null;
+	this.dataList = [];
+}
+
+QRCode.prototype = {
+	
+	addData : function(data) {
+		var newData = new QR8bitByte(data);
+		this.dataList.push(newData);
+		this.dataCache = null;
+	},
+	
+	isDark : function(row, col) {
+		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
+			throw new Error(row + "," + col);
+		}
+		return this.modules[row][col];
+	},
+
+	getModuleCount : function() {
+		return this.moduleCount;
+	},
+	
+	make : function() {
+		// Calculate automatically typeNumber if provided is < 1
+		if (this.typeNumber < 1 ){
+			var typeNumber = 1;
+			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
+				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+
+				var buffer = new QRBitBuffer();
+				var totalDataCount = 0;
+				for (var i = 0; i < rsBlocks.length; i++) {
+					totalDataCount += rsBlocks[i].dataCount;
+				}
+
+				for (var x = 0; x < this.dataList.length; x++) {
+					var data = this.dataList[x];
+					buffer.put(data.mode, 4);
+					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+					data.write(buffer);
+				}
+				if (buffer.getLengthInBits() <= totalDataCount * 8)
+					break;
+			}
+			this.typeNumber = typeNumber;
+		}
+		this.makeImpl(false, this.getBestMaskPattern() );
+	},
+	
+	makeImpl : function(test, maskPattern) {
+		
+		this.moduleCount = this.typeNumber * 4 + 17;
+		this.modules = new Array(this.moduleCount);
+		
+		for (var row = 0; row < this.moduleCount; row++) {
+			
+			this.modules[row] = new Array(this.moduleCount);
+			
+			for (var col = 0; col < this.moduleCount; col++) {
+				this.modules[row][col] = null;//(col + row) % 3;
+			}
+		}
+	
+		this.setupPositionProbePattern(0, 0);
+		this.setupPositionProbePattern(this.moduleCount - 7, 0);
+		this.setupPositionProbePattern(0, this.moduleCount - 7);
+		this.setupPositionAdjustPattern();
+		this.setupTimingPattern();
+		this.setupTypeInfo(test, maskPattern);
+		
+		if (this.typeNumber >= 7) {
+			this.setupTypeNumber(test);
+		}
+	
+		if (this.dataCache === null) {
+			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+		}
+	
+		this.mapData(this.dataCache, maskPattern);
+	},
+
+	setupPositionProbePattern : function(row, col)  {
+		
+		for (var r = -1; r <= 7; r++) {
+			
+			if (row + r <= -1 || this.moduleCount <= row + r) continue;
+			
+			for (var c = -1; c <= 7; c++) {
+				
+				if (col + c <= -1 || this.moduleCount <= col + c) continue;
+				
+				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
+                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
+                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+					this.modules[row + r][col + c] = true;
+				} else {
+					this.modules[row + r][col + c] = false;
+				}
+			}		
+		}		
+	},
+	
+	getBestMaskPattern : function() {
+	
+		var minLostPoint = 0;
+		var pattern = 0;
+	
+		for (var i = 0; i < 8; i++) {
+			
+			this.makeImpl(true, i);
+	
+			var lostPoint = QRUtil.getLostPoint(this);
+	
+			if (i === 0 || minLostPoint >  lostPoint) {
+				minLostPoint = lostPoint;
+				pattern = i;
+			}
+		}
+	
+		return pattern;
+	},
+	
+	createMovieClip : function(target_mc, instance_name, depth) {
+	
+		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
+		var cs = 1;
+	
+		this.make();
+
+		for (var row = 0; row < this.modules.length; row++) {
+			
+			var y = row * cs;
+			
+			for (var col = 0; col < this.modules[row].length; col++) {
+	
+				var x = col * cs;
+				var dark = this.modules[row][col];
+			
+				if (dark) {
+					qr_mc.beginFill(0, 100);
+					qr_mc.moveTo(x, y);
+					qr_mc.lineTo(x + cs, y);
+					qr_mc.lineTo(x + cs, y + cs);
+					qr_mc.lineTo(x, y + cs);
+					qr_mc.endFill();
+				}
+			}
+		}
+		
+		return qr_mc;
+	},
+
+	setupTimingPattern : function() {
+		
+		for (var r = 8; r < this.moduleCount - 8; r++) {
+			if (this.modules[r][6] !== null) {
+				continue;
+			}
+			this.modules[r][6] = (r % 2 === 0);
+		}
+	
+		for (var c = 8; c < this.moduleCount - 8; c++) {
+			if (this.modules[6][c] !== null) {
+				continue;
+			}
+			this.modules[6][c] = (c % 2 === 0);
+		}
+	},
+	
+	setupPositionAdjustPattern : function() {
+	
+		var pos = QRUtil.getPatternPosition(this.typeNumber);
+		
+		for (var i = 0; i < pos.length; i++) {
+		
+			for (var j = 0; j < pos.length; j++) {
+			
+				var row = pos[i];
+				var col = pos[j];
+				
+				if (this.modules[row][col] !== null) {
+					continue;
+				}
+				
+				for (var r = -2; r <= 2; r++) {
+				
+					for (var c = -2; c <= 2; c++) {
+					
+						if (Math.abs(r) === 2 || 
+                            Math.abs(c) === 2 ||
+                            (r === 0 && c === 0) ) {
+							this.modules[row + r][col + c] = true;
+						} else {
+							this.modules[row + r][col + c] = false;
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	setupTypeNumber : function(test) {
+	
+		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+        var mod;
+	
+		for (var i = 0; i < 18; i++) {
+			mod = (!test && ( (bits >> i) & 1) === 1);
+			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+		}
+	
+		for (var x = 0; x < 18; x++) {
+			mod = (!test && ( (bits >> x) & 1) === 1);
+			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
+		}
+	},
+	
+	setupTypeInfo : function(test, maskPattern) {
+	
+		var data = (this.errorCorrectLevel << 3) | maskPattern;
+		var bits = QRUtil.getBCHTypeInfo(data);
+        var mod;
+	
+		// vertical		
+		for (var v = 0; v < 15; v++) {
+	
+			mod = (!test && ( (bits >> v) & 1) === 1);
+	
+			if (v < 6) {
+				this.modules[v][8] = mod;
+			} else if (v < 8) {
+				this.modules[v + 1][8] = mod;
+			} else {
+				this.modules[this.moduleCount - 15 + v][8] = mod;
+			}
+		}
+	
+		// horizontal
+		for (var h = 0; h < 15; h++) {
+	
+			mod = (!test && ( (bits >> h) & 1) === 1);
+			
+			if (h < 8) {
+				this.modules[8][this.moduleCount - h - 1] = mod;
+			} else if (h < 9) {
+				this.modules[8][15 - h - 1 + 1] = mod;
+			} else {
+				this.modules[8][15 - h - 1] = mod;
+			}
+		}
+	
+		// fixed module
+		this.modules[this.moduleCount - 8][8] = (!test);
+	
+	},
+	
+	mapData : function(data, maskPattern) {
+		
+		var inc = -1;
+		var row = this.moduleCount - 1;
+		var bitIndex = 7;
+		var byteIndex = 0;
+		
+		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+	
+			if (col === 6) col--;
+	
+			while (true) {
+	
+				for (var c = 0; c < 2; c++) {
+					
+					if (this.modules[row][col - c] === null) {
+						
+						var dark = false;
+	
+						if (byteIndex < data.length) {
+							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
+						}
+	
+						var mask = QRUtil.getMask(maskPattern, row, col - c);
+	
+						if (mask) {
+							dark = !dark;
+						}
+						
+						this.modules[row][col - c] = dark;
+						bitIndex--;
+	
+						if (bitIndex === -1) {
+							byteIndex++;
+							bitIndex = 7;
+						}
+					}
+				}
+								
+				row += inc;
+	
+				if (row < 0 || this.moduleCount <= row) {
+					row -= inc;
+					inc = -inc;
+					break;
+				}
+			}
+		}
+		
+	}
+
+};
+
+QRCode.PAD0 = 0xEC;
+QRCode.PAD1 = 0x11;
+
+QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+	
+	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+	
+	var buffer = new QRBitBuffer();
+	
+	for (var i = 0; i < dataList.length; i++) {
+		var data = dataList[i];
+		buffer.put(data.mode, 4);
+		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+		data.write(buffer);
+	}
+
+	// calc num max data.
+	var totalDataCount = 0;
+	for (var x = 0; x < rsBlocks.length; x++) {
+		totalDataCount += rsBlocks[x].dataCount;
+	}
+
+	if (buffer.getLengthInBits() > totalDataCount * 8) {
+		throw new Error("code length overflow. (" + 
+            buffer.getLengthInBits() + 
+            ">" +  
+            totalDataCount * 8 + 
+            ")");
+	}
+
+	// end code
+	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+		buffer.put(0, 4);
+	}
+
+	// padding
+	while (buffer.getLengthInBits() % 8 !== 0) {
+		buffer.putBit(false);
+	}
+
+	// padding
+	while (true) {
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD0, 8);
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD1, 8);
+	}
+
+	return QRCode.createBytes(buffer, rsBlocks);
+};
+
+QRCode.createBytes = function(buffer, rsBlocks) {
+
+	var offset = 0;
+	
+	var maxDcCount = 0;
+	var maxEcCount = 0;
+	
+	var dcdata = new Array(rsBlocks.length);
+	var ecdata = new Array(rsBlocks.length);
+	
+	for (var r = 0; r < rsBlocks.length; r++) {
+
+		var dcCount = rsBlocks[r].dataCount;
+		var ecCount = rsBlocks[r].totalCount - dcCount;
+
+		maxDcCount = Math.max(maxDcCount, dcCount);
+		maxEcCount = Math.max(maxEcCount, ecCount);
+		
+		dcdata[r] = new Array(dcCount);
+		
+		for (var i = 0; i < dcdata[r].length; i++) {
+			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+		}
+		offset += dcCount;
+		
+		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+		var modPoly = rawPoly.mod(rsPoly);
+		ecdata[r] = new Array(rsPoly.getLength() - 1);
+		for (var x = 0; x < ecdata[r].length; x++) {
+            var modIndex = x + modPoly.getLength() - ecdata[r].length;
+			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+		}
+
+	}
+	
+	var totalCodeCount = 0;
+	for (var y = 0; y < rsBlocks.length; y++) {
+		totalCodeCount += rsBlocks[y].totalCount;
+	}
+
+	var data = new Array(totalCodeCount);
+	var index = 0;
+
+	for (var z = 0; z < maxDcCount; z++) {
+		for (var s = 0; s < rsBlocks.length; s++) {
+			if (z < dcdata[s].length) {
+				data[index++] = dcdata[s][z];
+			}
+		}
+	}
+
+	for (var xx = 0; xx < maxEcCount; xx++) {
+		for (var t = 0; t < rsBlocks.length; t++) {
+			if (xx < ecdata[t].length) {
+				data[index++] = ecdata[t][xx];
+			}
+		}
+	}
+
+	return data;
+
+};
+
+module.exports = QRCode;
+
+}};
+M['QRBitBuffer']={fn:function(module,exports){var require=req;
+function QRBitBuffer() {
+	this.buffer = [];
+	this.length = 0;
+}
+
+QRBitBuffer.prototype = {
+
+	get : function(index) {
+		var bufIndex = Math.floor(index / 8);
+		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+	},
+	
+	put : function(num, length) {
+		for (var i = 0; i < length; i++) {
+			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+		}
+	},
+	
+	getLengthInBits : function() {
+		return this.length;
+	},
+	
+	putBit : function(bit) {
+	
+		var bufIndex = Math.floor(this.length / 8);
+		if (this.buffer.length <= bufIndex) {
+			this.buffer.push(0);
+		}
+	
+		if (bit) {
+			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
+		}
+	
+		this.length++;
+	}
+};
+
+module.exports = QRBitBuffer;
+
+}};
+M['QRRSBlock']={fn:function(module,exports){var require=req;
+var QRErrorCorrectLevel = require('./QRErrorCorrectLevel');
+
+function QRRSBlock(totalCount, dataCount) {
+	this.totalCount = totalCount;
+	this.dataCount  = dataCount;
+}
+
+QRRSBlock.RS_BLOCK_TABLE = [
+
+	// L
+	// M
+	// Q
+	// H
+
+	// 1
+	[1, 26, 19],
+	[1, 26, 16],
+	[1, 26, 13],
+	[1, 26, 9],
+	
+	// 2
+	[1, 44, 34],
+	[1, 44, 28],
+	[1, 44, 22],
+	[1, 44, 16],
+
+	// 3
+	[1, 70, 55],
+	[1, 70, 44],
+	[2, 35, 17],
+	[2, 35, 13],
+
+	// 4		
+	[1, 100, 80],
+	[2, 50, 32],
+	[2, 50, 24],
+	[4, 25, 9],
+	
+	// 5
+	[1, 134, 108],
+	[2, 67, 43],
+	[2, 33, 15, 2, 34, 16],
+	[2, 33, 11, 2, 34, 12],
+	
+	// 6
+	[2, 86, 68],
+	[4, 43, 27],
+	[4, 43, 19],
+	[4, 43, 15],
+	
+	// 7		
+	[2, 98, 78],
+	[4, 49, 31],
+	[2, 32, 14, 4, 33, 15],
+	[4, 39, 13, 1, 40, 14],
+	
+	// 8
+	[2, 121, 97],
+	[2, 60, 38, 2, 61, 39],
+	[4, 40, 18, 2, 41, 19],
+	[4, 40, 14, 2, 41, 15],
+	
+	// 9
+	[2, 146, 116],
+	[3, 58, 36, 2, 59, 37],
+	[4, 36, 16, 4, 37, 17],
+	[4, 36, 12, 4, 37, 13],
+	
+	// 10		
+	[2, 86, 68, 2, 87, 69],
+	[4, 69, 43, 1, 70, 44],
+	[6, 43, 19, 2, 44, 20],
+	[6, 43, 15, 2, 44, 16],
+
+	// 11
+	[4, 101, 81],
+	[1, 80, 50, 4, 81, 51],
+	[4, 50, 22, 4, 51, 23],
+	[3, 36, 12, 8, 37, 13],
+
+	// 12
+	[2, 116, 92, 2, 117, 93],
+	[6, 58, 36, 2, 59, 37],
+	[4, 46, 20, 6, 47, 21],
+	[7, 42, 14, 4, 43, 15],
+
+	// 13
+	[4, 133, 107],
+	[8, 59, 37, 1, 60, 38],
+	[8, 44, 20, 4, 45, 21],
+	[12, 33, 11, 4, 34, 12],
+
+	// 14
+	[3, 145, 115, 1, 146, 116],
+	[4, 64, 40, 5, 65, 41],
+	[11, 36, 16, 5, 37, 17],
+	[11, 36, 12, 5, 37, 13],
+
+	// 15
+	[5, 109, 87, 1, 110, 88],
+	[5, 65, 41, 5, 66, 42],
+	[5, 54, 24, 7, 55, 25],
+	[11, 36, 12],
+
+	// 16
+	[5, 122, 98, 1, 123, 99],
+	[7, 73, 45, 3, 74, 46],
+	[15, 43, 19, 2, 44, 20],
+	[3, 45, 15, 13, 46, 16],
+
+	// 17
+	[1, 135, 107, 5, 136, 108],
+	[10, 74, 46, 1, 75, 47],
+	[1, 50, 22, 15, 51, 23],
+	[2, 42, 14, 17, 43, 15],
+
+	// 18
+	[5, 150, 120, 1, 151, 121],
+	[9, 69, 43, 4, 70, 44],
+	[17, 50, 22, 1, 51, 23],
+	[2, 42, 14, 19, 43, 15],
+
+	// 19
+	[3, 141, 113, 4, 142, 114],
+	[3, 70, 44, 11, 71, 45],
+	[17, 47, 21, 4, 48, 22],
+	[9, 39, 13, 16, 40, 14],
+
+	// 20
+	[3, 135, 107, 5, 136, 108],
+	[3, 67, 41, 13, 68, 42],
+	[15, 54, 24, 5, 55, 25],
+	[15, 43, 15, 10, 44, 16],
+
+	// 21
+	[4, 144, 116, 4, 145, 117],
+	[17, 68, 42],
+	[17, 50, 22, 6, 51, 23],
+	[19, 46, 16, 6, 47, 17],
+
+	// 22
+	[2, 139, 111, 7, 140, 112],
+	[17, 74, 46],
+	[7, 54, 24, 16, 55, 25],
+	[34, 37, 13],
+
+	// 23
+	[4, 151, 121, 5, 152, 122],
+	[4, 75, 47, 14, 76, 48],
+	[11, 54, 24, 14, 55, 25],
+	[16, 45, 15, 14, 46, 16],
+
+	// 24
+	[6, 147, 117, 4, 148, 118],
+	[6, 73, 45, 14, 74, 46],
+	[11, 54, 24, 16, 55, 25],
+	[30, 46, 16, 2, 47, 17],
+
+	// 25
+	[8, 132, 106, 4, 133, 107],
+	[8, 75, 47, 13, 76, 48],
+	[7, 54, 24, 22, 55, 25],
+	[22, 45, 15, 13, 46, 16],
+
+	// 26
+	[10, 142, 114, 2, 143, 115],
+	[19, 74, 46, 4, 75, 47],
+	[28, 50, 22, 6, 51, 23],
+	[33, 46, 16, 4, 47, 17],
+
+	// 27
+	[8, 152, 122, 4, 153, 123],
+	[22, 73, 45, 3, 74, 46],
+	[8, 53, 23, 26, 54, 24],
+	[12, 45, 15, 28, 46, 16],
+
+	// 28
+	[3, 147, 117, 10, 148, 118],
+	[3, 73, 45, 23, 74, 46],
+	[4, 54, 24, 31, 55, 25],
+	[11, 45, 15, 31, 46, 16],
+
+	// 29
+	[7, 146, 116, 7, 147, 117],
+	[21, 73, 45, 7, 74, 46],
+	[1, 53, 23, 37, 54, 24],
+	[19, 45, 15, 26, 46, 16],
+
+	// 30
+	[5, 145, 115, 10, 146, 116],
+	[19, 75, 47, 10, 76, 48],
+	[15, 54, 24, 25, 55, 25],
+	[23, 45, 15, 25, 46, 16],
+
+	// 31
+	[13, 145, 115, 3, 146, 116],
+	[2, 74, 46, 29, 75, 47],
+	[42, 54, 24, 1, 55, 25],
+	[23, 45, 15, 28, 46, 16],
+
+	// 32
+	[17, 145, 115],
+	[10, 74, 46, 23, 75, 47],
+	[10, 54, 24, 35, 55, 25],
+	[19, 45, 15, 35, 46, 16],
+
+	// 33
+	[17, 145, 115, 1, 146, 116],
+	[14, 74, 46, 21, 75, 47],
+	[29, 54, 24, 19, 55, 25],
+	[11, 45, 15, 46, 46, 16],
+
+	// 34
+	[13, 145, 115, 6, 146, 116],
+	[14, 74, 46, 23, 75, 47],
+	[44, 54, 24, 7, 55, 25],
+	[59, 46, 16, 1, 47, 17],
+
+	// 35
+	[12, 151, 121, 7, 152, 122],
+	[12, 75, 47, 26, 76, 48],
+	[39, 54, 24, 14, 55, 25],
+	[22, 45, 15, 41, 46, 16],
+
+	// 36
+	[6, 151, 121, 14, 152, 122],
+	[6, 75, 47, 34, 76, 48],
+	[46, 54, 24, 10, 55, 25],
+	[2, 45, 15, 64, 46, 16],
+
+	// 37
+	[17, 152, 122, 4, 153, 123],
+	[29, 74, 46, 14, 75, 47],
+	[49, 54, 24, 10, 55, 25],
+	[24, 45, 15, 46, 46, 16],
+
+	// 38
+	[4, 152, 122, 18, 153, 123],
+	[13, 74, 46, 32, 75, 47],
+	[48, 54, 24, 14, 55, 25],
+	[42, 45, 15, 32, 46, 16],
+
+	// 39
+	[20, 147, 117, 4, 148, 118],
+	[40, 75, 47, 7, 76, 48],
+	[43, 54, 24, 22, 55, 25],
+	[10, 45, 15, 67, 46, 16],
+
+	// 40
+	[19, 148, 118, 6, 149, 119],
+	[18, 75, 47, 31, 76, 48],
+	[34, 54, 24, 34, 55, 25],
+	[20, 45, 15, 61, 46, 16]
+];
+
+QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+	
+	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+	
+	if (rsBlock === undefined) {
+		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+	}
+
+	var length = rsBlock.length / 3;
+	
+	var list = [];
+	
+	for (var i = 0; i < length; i++) {
+
+		var count = rsBlock[i * 3 + 0];
+		var totalCount = rsBlock[i * 3 + 1];
+		var dataCount  = rsBlock[i * 3 + 2];
+
+		for (var j = 0; j < count; j++) {
+			list.push(new QRRSBlock(totalCount, dataCount) );	
+		}
+	}
+	
+	return list;
+};
+
+QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+
+	switch(errorCorrectLevel) {
+	case QRErrorCorrectLevel.L :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+	case QRErrorCorrectLevel.M :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+	case QRErrorCorrectLevel.Q :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+	case QRErrorCorrectLevel.H :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+	default :
+		return undefined;
+	}
+};
+
+module.exports = QRRSBlock;
+
+}};
+return {QRCode:req('index'),L:req('QRErrorCorrectLevel')};})();
+
+// ======== 後台網址（老師部署 Google Apps Script 後貼上） ========
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2-5nAcGKwJXvDBIGY9BSowbQiezLFkwYLiLHgHdu3GStJz0wFmZflCM-Ure-nL9XC/exec';
+const HAS_BACKEND = /^https?:\/\//.test(SCRIPT_URL);
+
+// ======== 工具 ========
+const TONE_MARK = {1:'',2:'ˊ',3:'ˇ',4:'ˋ'};
+const MARK_TONE = {'ˊ':2,'ˇ':3,'ˋ':4,'ˉ':1};
+const PAIRS = {'ㄓ':'ㄗ','ㄗ':'ㄓ','ㄔ':'ㄘ','ㄘ':'ㄔ','ㄕ':'ㄙ','ㄙ':'ㄕ','ㄣ':'ㄥ','ㄥ':'ㄣ','ㄢ':'ㄤ','ㄤ':'ㄢ','ㄋ':'ㄌ','ㄌ':'ㄋ','ㄈ':'ㄏ','ㄏ':'ㄈ'};
+const TONE_NAMES = {1:'一聲',2:'二聲',3:'三聲',4:'四聲',5:'輕聲'};
+const TONE_SHOW = {1:'ˉ',2:'ˊ',3:'ˇ',4:'ˋ',5:'˙'};
+const MODE_NAMES = {m1:'看字選注音',m2:'看注音選字',m3:'聲調',m4:'易混淆音'};
+const ZY_RE = /^[ㄅ-ㄩ]+$/;
+
+function parseSyl(s){
+  s = s.trim();
+  if(s[0]==='˙' || s[0]==='·') return {l:s.slice(1), t:5};
+  const last = s[s.length-1];
+  if(MARK_TONE[last]) return {l:s.slice(0,-1), t:MARK_TONE[last]};
+  return {l:s, t:1};
+}
+function fmt(sy){ return sy.t===5 ? '˙'+sy.l : sy.l+TONE_MARK[sy.t]; }
+function zyStr(syl){ return syl.map(fmt).join(' '); }
+function parseLine(line){
+  const parts = String(line).trim().split(/\s+/);
+  if(parts.length<2) return {err:'少了注音'};
+  const w = parts[0];
+  const chars = Array.from(w);
+  const syl = parts.slice(1).map(parseSyl);
+  if(chars.some(c=>!/[一-鿿]/.test(c))) return {err:'第一段要是國字'};
+  if(chars.length!==syl.length) return {err:`「${w}」有 ${chars.length} 個字，但注音有 ${syl.length} 組`};
+  for(const s of syl){ if(!s.l || !ZY_RE.test(s.l)) return {err:`注音「${fmt(s)}」看不懂，請只用注音符號`}; }
+  return {w, syl};
+}
+function validLines(text){
+  const lines = text.split('\n').map(s=>s.trim()).filter(Boolean);
+  const ok=[], errs=[];
+  lines.forEach((l,n)=>{ const p=parseLine(l); if(p.err) errs.push(`第 ${n+1} 行：${p.err}`); else ok.push(p.w+' '+zyStr(p.syl)); });
+  return {ok, errs};
+}
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem('zyx-'+k); return v==null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ try{ localStorage.setItem('zyx-'+k, JSON.stringify(v)); }catch(e){} }
+};
+
+const BUILTIN = RAW.trim().split('\n').map(parseLine).filter(x=>x && !x.err);
+
+// ======== 班級：網址後面的 #c-代碼 決定是哪一班（每班一張 QR Code） ========
+let classId = store.get('classId', '');
+let className = store.get('className', '');
+(function(){
+  const m = location.hash.match(/^#c-([a-z0-9]{4,12})$/);
+  if(m && m[1]!==classId){ classId = m[1]; className = ''; store.set('classId', classId); store.set('className', ''); store.set('student', null); }
+})();
+function setClass(id, name){
+  classId = id; className = name || '';
+  store.set('classId', classId); store.set('className', className);
+  try{ history.replaceState(null, '', location.pathname + (id ? '#c-'+id : '')); }catch(e){}
+}
+async function fetchClasses(){
+  const d = await (await fetch(SCRIPT_URL+'?action=classes')).json();
+  return (d && d.ok && d.classes) || [];
+}
+// 選班級畫面（兩個網站共用）：列出班級按鈕，點了就進入那一班
+async function showClassPicker(onPicked){
+  show('pickClass');
+  const box = $('classList');
+  box.innerHTML = '<span class="hint">讀取班級中…</span>';
+  try{
+    const list = await fetchClasses();
+    if(!list.length){ box.innerHTML = '<span class="hint">老師還沒有建立班級。請老師在注音小學堂的老師後台新增班級。</span>'; return; }
+    box.innerHTML = list.map(c=>`<button class="mode class-btn" data-id="${esc(c.id)}"><b>${esc(c.name)}</b></button>`).join('');
+    box.querySelectorAll('.class-btn').forEach(b=>b.addEventListener('click',()=>{ const c=list.find(x=>x.id===b.dataset.id); setClass(c.id, c.name); onPicked(); }));
+  }catch(e){ box.innerHTML = '<span class="hint">連不上網路，請確認網路後重新整理。</span>'; }
+}
+
+let student = store.get('student', null);   // {seat, name}
+function sid(){ return student ? `${classId}-${student.name}` : 'guest'; }
+let state = {};
+function loadStudentState(){
+  state.stars = store.get('stars:'+sid(), 0);
+  state.wrong = store.get('wrong:'+sid(), []);
+}
+state.custom = store.get('custom',[]);
+state.onlyMine = store.get('onlyMine',false);
+state.classWords = store.get('classWords',[]);
+state.onlyClass = store.get('onlyClass',false);
+loadStudentState();
+function saveStudentState(){ store.set('stars:'+sid(), state.stars); store.set('wrong:'+sid(), state.wrong); }
+
+function itemsFrom(lines){ return lines.map(parseLine).filter(x=>x && !x.err); }
+function customItems(){ return itemsFrom(state.custom); }
+function classItems(){ return itemsFrom(state.classWords); }
+function allItems(){
+  const map = new Map();
+  BUILTIN.forEach(i=>map.set(i.w,i));
+  classItems().forEach(i=>map.set(i.w,i));
+  customItems().forEach(i=>map.set(i.w,i));
+  return [...map.values()];
+}
+function pool(){
+  const cls = classItems();
+  if(state.onlyClass && cls.length>=4) return cls;
+  const mine = customItems();
+  if(state.onlyMine && mine.length>=4) return mine;
+  return allItems();
+}
+function findItem(w){ return allItems().find(i=>i.w===w); }
+
+// ======== 和後台溝通 ========
+async function loadClassWords(){
+  if(!HAS_BACKEND) return;
+  try{
+    const r = await fetch(SCRIPT_URL+'?action=words&cls='+encodeURIComponent(classId||''));
+    const d = await r.json();
+    if(d && d.ok){
+      if(d.className){ className = d.className; store.set('className', className); }
+      if(classId && d.classOk===false){ setClass('', ''); }
+      state.classWords = (d.words||[]).filter(l=>!parseLine(l).err);
+      state.onlyClass = !!d.onlyClass;
+      store.set('classWords',state.classWords); store.set('onlyClass',state.onlyClass);
+      if(typeof onClassWords==='function') onClassWords(d);
+    }
+  }catch(e){}
+}
+function postJSON(obj){
+  return fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(obj)});
+}
+async function flushPending(){
+  if(!HAS_BACKEND) return;
+  let q = store.get('pending',[]);
+  while(q.length){
+    try{ await postJSON(q[0]); q.shift(); store.set('pending',q); }
+    catch(e){ return false; }
+  }
+  return true;
+}
+async function sendLog(answers){
+  if(!HAS_BACKEND || !answers.length || !student) return null;
+  const q = store.get('pending',[]);
+  q.push({action:'log', seat:student.seat, name:student.name, c:classId, answers});
+  store.set('pending', q.slice(-30));
+  return flushPending();
+}
+
+// ======== 朗讀 ========
+const canSpeak = 'speechSynthesis' in window;
+function speak(text){
+  if(!canSpeak) return;
+  try{
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-TW'; u.rate = 0.75;
+    const vs = speechSynthesis.getVoices();
+    const v = vs.find(v=>/zh[-_]TW/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang));
+    if(v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
+if(canSpeak){ try{ speechSynthesis.getVoices(); }catch(e){} }
+
+// ======== 老師錄音 ========
+let recWords = new Set(store.get('recWords',[]));
+const audioCache = {};
+const player = new Audio();
+let audioUnlocked = false;
+// iPad 規定聲音要由點擊開始播放：第一次點畫面時先播一段無聲，之後才能順利播錄音
+const SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+document.addEventListener('pointerdown',()=>{ if(audioUnlocked) return; audioUnlocked=true; try{ player.src=SILENT; const p=player.play(); if(p) p.catch(()=>{}); }catch(e){} },{capture:true});
+
+async function loadRecList(){
+  if(!HAS_BACKEND) return;
+  try{
+    const d = await (await fetch(SCRIPT_URL+'?action=audioList')).json();
+    if(d && d.ok){ recWords = new Set(d.words||[]); store.set('recWords',[...recWords]); }
+  }catch(e){}
+}
+async function fetchAudio(w){
+  if(audioCache[w]) return audioCache[w];
+  const d = await (await fetch(SCRIPT_URL+'?action=audio&w='+encodeURIComponent(w))).json();
+  if(!d || !d.ok) throw new Error('no audio');
+  audioCache[w] = `data:${d.mime||'audio/wav'};base64,${d.data}`;
+  return audioCache[w];
+}
+function playUrl(url){ player.pause(); player.src = url; player.currentTime = 0; return player.play(); }
+function speakWord(w){
+  if(HAS_BACKEND && recWords.has(w)){
+    if(audioCache[w]){ const p=playUrl(audioCache[w]); if(p) p.catch(()=>speak(w)); return; }
+    fetchAudio(w).then(playUrl).catch(()=>speak(w));
+    return;
+  }
+  speak(w);
+}
+function prefetchRound(){
+  if(!HAS_BACKEND) return;
+  round.forEach(q=>{ if(recWords.has(q.item.w)) fetchAudio(q.item.w).catch(()=>{}); });
+}
+
+// 錄音轉成 WAV（每台 iPad、電腦都能播放），去掉前後空白、音量調整、最長 3 秒
+async function toWav(blob){
+  const ab = await blob.arrayBuffer();
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const ctx = new AC();
+  const buf = await new Promise((res,rej)=>{ const p=ctx.decodeAudioData(ab,res,rej); if(p&&p.then) p.then(res,rej); });
+  try{ ctx.close(); }catch(e){}
+  const len = buf.length, chs = buf.numberOfChannels;
+  const mono = new Float32Array(len);
+  for(let c=0;c<chs;c++){ const d=buf.getChannelData(c); for(let i=0;i<len;i++) mono[i]+=d[i]/chs; }
+  const rate = 16000, ratio = buf.sampleRate/rate;
+  const n = Math.floor(len/ratio);
+  let out = new Float32Array(n);
+  for(let i=0;i<n;i++){ const a=Math.floor(i*ratio), b=Math.max(a+1,Math.floor((i+1)*ratio)); let s=0; for(let k=a;k<b&&k<len;k++) s+=mono[k]; out[i]=s/(b-a); }
+  let peak=0; for(const v of out) peak=Math.max(peak,Math.abs(v));
+  if(peak<0.01) throw new Error('quiet');
+  const th = Math.max(0.015, peak*0.08), pad = Math.round(rate*0.12);
+  let st=0, en=out.length-1;
+  while(st<out.length && Math.abs(out[st])<th) st++;
+  while(en>st && Math.abs(out[en])<th) en--;
+  st=Math.max(0,st-pad); en=Math.min(out.length-1,en+pad);
+  out = out.slice(st, Math.min(en+1, st+rate*3));
+  const gain = 0.9/peak;
+  const bytes = new Uint8Array(44+out.length*2), dv = new DataView(bytes.buffer);
+  const wstr=(o,s)=>{ for(let i=0;i<s.length;i++) dv.setUint8(o+i,s.charCodeAt(i)); };
+  wstr(0,'RIFF'); dv.setUint32(4,36+out.length*2,true); wstr(8,'WAVE'); wstr(12,'fmt ');
+  dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true); dv.setUint32(24,rate,true);
+  dv.setUint32(28,rate*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true); wstr(36,'data'); dv.setUint32(40,out.length*2,true);
+  for(let i=0;i<out.length;i++){ const v=Math.max(-1,Math.min(1,out[i]*gain)); dv.setInt16(44+i*2, v<0?v*0x8000:v*0x7fff, true); }
+  let bin=''; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null, bytes.subarray(i,i+0x8000));
+  const b64 = btoa(bin);
+  return {b64, url:'data:audio/wav;base64,'+b64};
+}
+
+// ======== 出題 ========
+function hasConfusable(item){ return item.syl.some(s=>[...s.l].some(c=>PAIRS[c])); }
+
+function makeQ(mode, item, P, opt={}){
+  if(mode==='m1'){
+    const correct = zyStr(item.syl);
+    const tones=[], swaps=[];
+    item.syl.forEach((s,i)=>{
+      for(let t=1;t<=5;t++){ if(t!==s.t){ const c=item.syl.map(x=>({...x})); c[i].t=t; tones.push(zyStr(c)); } }
+      [...s.l].forEach((ch,k)=>{ if(PAIRS[ch]){ const c=item.syl.map(x=>({...x})); const arr=[...s.l]; arr[k]=PAIRS[ch]; c[i].l=arr.join(''); swaps.push(zyStr(c)); } });
+    });
+    const set = new Set();
+    shuffle(swaps).slice(0,2).forEach(x=>{ if(x!==correct) set.add(x); });
+    for(const x of shuffle(tones)){ if(set.size>=3) break; if(x!==correct) set.add(x); }
+    const opts = shuffle([correct, ...[...set].slice(0,3)]);
+    return {mode,item,title:'這個詞的注音是哪一個？',show:'char',options:opts.map(o=>({label:optZy(o),key:o,text:o,correct:o===correct})),cls:'zy-opt'};
+  }
+  if(mode==='m2'){
+    const len = item.syl.length;
+    let others = P.filter(i=>i.w!==item.w && i.syl.length===len);
+    if(others.length<3) others = P.filter(i=>i.w!==item.w);
+    const opts = shuffle([item, ...shuffle(others).slice(0,3)]);
+    return {mode,item,title:'這是哪一個詞？',show:'zy',options:opts.map(o=>({label:esc(o.w),key:o.w,text:o.w,correct:o.w===item.w})),cls:'word-opt'};
+  }
+  if(mode==='m3'){
+    const idx = opt.idx!=null ? opt.idx : Math.floor(Math.random()*item.syl.length);
+    const ch = Array.from(item.w)[idx];
+    const t = item.syl[idx].t;
+    return {mode,item,idx,title:`「${ch}」是第幾聲？`,show:'tone',options:[1,2,3,4,5].map(n=>({label:`${TONE_SHOW[n]}<small>${TONE_NAMES[n]}</small>`,key:n,text:`第${idx+1}字「${ch}」選${TONE_NAMES[n]}`,correct:n===t})),cls:'five'};
+  }
+  if(mode==='m4'){
+    const spots=[];
+    item.syl.forEach((s,i)=>[...s.l].forEach((c,k)=>{ if(PAIRS[c]) spots.push({i,k,c}); }));
+    const sp = (opt.letter && spots.find(x=>x.c===opt.letter && (opt.idx==null || x.i===opt.idx))) || pick(spots);
+    const pair = shuffle([sp.c, PAIRS[sp.c]]);
+    const ch = Array.from(item.w)[sp.i];
+    return {mode,item,idx:sp.i,spot:sp,title:'空格裡應該填哪一個？',show:'blank',options:pair.map(p=>({label:p,key:p,text:`第${sp.i+1}字「${ch}」選${p}`,correct:p===sp.c})),cls:'big'};
+  }
+}
+
+function buildRound(mode){
+  const P = pool();
+  if(mode==='review'){
+    const list = shuffle(state.wrong).slice(0,10).map(x=>{ const it=findItem(x.w); return it?{mode:x.mode,item:it}:null; }).filter(Boolean);
+    return list.map(x=>{ let m=x.mode; if(m==='m4' && !hasConfusable(x.item)) m='m1'; return makeQ(m,x.item,P); });
+  }
+  const qs=[]; const used=new Set();
+  for(let n=0;n<10;n++){
+    let m = mode==='mix' ? pick(['m1','m2','m3','m4']) : mode;
+    let cands = P.filter(i=>!used.has(i.w) && (m!=='m4'||hasConfusable(i)));
+    if(!cands.length){ cands = P.filter(i=>m!=='m4'||hasConfusable(i)); }
+    if(!cands.length){ m='m1'; cands=P; }
+    const it = pick(cands); used.add(it.w);
+    qs.push(makeQ(m,it,P));
+  }
+  return qs;
+}
+
+// ======== 畫面 ========
+const $ = id=>document.getElementById(id);
+const screens = ['pickClass','login','home','quiz','result','parent','teacher'];
+function show(name){
+  screens.forEach(s=>$(s).hidden = s!==name);
+  const studentView = name!=='teacher' && name!=='login' && name!=='pickClass';
+  if(name==='login') renderClassLine();
+  $('meBox').hidden = !(student && studentView);
+  $('starBox').hidden = !(student && studentView);
+  window.scrollTo(0,0);
+  if(name==='home') refreshHome();
+}
+function goHome(){
+  if(HAS_BACKEND && !classId) return showClassPicker(()=>{ student=null; store.set('student',null); loadStudentState(); loadClassWords(); show('login'); });
+  show(student ? 'home' : 'login');
+}
+function renderClassLine(){
+  const el = $('classLine'); if(!el) return;
+  if(!HAS_BACKEND || !classId){ el.innerHTML=''; return; }
+  el.innerHTML = `班級：<b>${esc(className||'讀取中…')}</b> <button type="button" class="linkbtn" id="notMyClass">不是這一班？</button>`;
+  $('notMyClass').addEventListener('click',()=>{ setClass('',''); student=null; store.set('student',null); goHome(); });
+}
+function onClassWords(){ renderClassLine(); if(!$('home').hidden) refreshHome(); }
+
+function refreshHome(){
+  $('starCount').textContent = state.stars;
+  if(student) { $('meName').textContent = student.name; $('hello').textContent = `${student.name}，今天想練什麼？`; }
+  const n = state.wrong.length;
+  $('reviewInfo').textContent = n ? `有 ${n} 題等你再挑戰` : '目前沒有錯題，太棒了';
+  $('reviewCard').disabled = !n;
+  const c = customItems().length;
+  $('customInfo').textContent = c ? `這台已加入 ${c} 個詞${state.onlyMine&&c>=4?'（目前只練這些）':''}` : '只會出現在這台 iPad';
+  const cls = classItems().length;
+  const nb = $('classNotice');
+  if(cls){ nb.hidden=false; nb.textContent = state.onlyClass&&cls>=4 ? `老師指定了 ${cls} 個本週字詞，今天的題目都會從這些詞出。` : `老師加了 ${cls} 個本週字詞，會混在題目裡出現。`; }
+  else nb.hidden=true;
+}
+
+// 直式注音：符號由上往下排，聲調標在最後一個符號的右上方，輕聲點在最上面
+function vertZy(s, opt={}){
+  const letters = [...s.l].map((c,k)=> k===opt.blankK ? '<span class="blank">▢</span>' : esc(c));
+  let tone = '';
+  if(opt.hideTone) tone = '<span class="blank">？</span>';
+  else if(s.t>=2 && s.t<=4) tone = TONE_MARK[s.t];
+  const dot = (!opt.hideTone && s.t===5) ? '<span class="dot">˙</span>' : '';
+  const body = letters.map((c,k)=> k===letters.length-1 && tone ? `<span class="z">${c}<span class="t">${tone}</span></span>` : `<span class="z">${c}</span>`).join('');
+  return dot + body;
+}
+
+// 選項用的直式注音：每個字的注音一欄，由左到右排
+function optZy(str){
+  return `<span class="optzy" aria-label="${esc(str)}">${str.split(' ').map(x=>`<span class="zy">${vertZy(parseSyl(x))}</span>`).join('')}</span>`;
+}
+
+// 小型「國字＋直式注音」，用在答案說明、錯題清單、老師後台
+function miniWord(w, zy){
+  const chars = Array.from(w), syl = String(zy).trim().split(/\s+/).map(parseSyl);
+  return `<span class="mini" aria-label="${esc(w)} ${esc(zy)}">${chars.map((c,i)=>`<span class="mc"><span class="mch">${esc(c)}</span>${syl[i]?`<span class="zy">${vertZy(syl[i])}</span>`:''}</span>`).join('')}</span>`;
+}
+
+function wordHTML(q, revealed){
+  const chars = Array.from(q.item.w);
+  const zyOnly = q.show==='zy' && !revealed;
+  const cells = chars.map((c,i)=>{
+    const s = q.item.syl[i];
+    let zy = vertZy(s);
+    let target = false;
+    if(!revealed){
+      if(q.show==='char') zy = '';
+      if(q.show==='tone' && i===q.idx){ target=true; zy = vertZy(s,{hideTone:true}); }
+      if(q.show==='blank' && i===q.idx){ target=true; zy = vertZy(s,{blankK:q.spot.k}); }
+    } else if((q.show==='tone'||q.show==='blank') && i===q.idx){ target=true; }
+    const chHTML = zyOnly ? '' : `<span class="ch">${esc(c)}</span>`;
+    const zyHTML = zy ? `<span class="zy">${zy}</span>` : '';
+    return `<div class="cell${target?' target':''}">${chHTML}${zyHTML}</div>`;
+  }).join('');
+  return `<div class="word${zyOnly?' zy-only':''}">${cells}</div>`;
+}
+
+let round=[], qi=0, score=0, streak=0, roundWrong=[], lastMode='m1', answered=false, log=[];
+
+function startRound(mode){
+  if(pool().length<4) return;
+  lastMode = mode;
+  round = buildRound(mode);
+  if(!round.length){ show('home'); return; }
+  qi=0; score=0; streak=0; roundWrong=[]; log=[];
+  show('quiz'); renderQ(); prefetchRound();
+}
+
+const speakerSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
+
+function renderQ(){
+  answered=false;
+  const q = round[qi];
+  $('progText').textContent = `第 ${qi+1} / ${round.length} 題`;
+  $('progBar').style.width = (qi/round.length*100)+'%';
+  $('qTitle').textContent = q.title;
+  $('qWord').innerHTML = wordHTML(q,false);
+  $('qSay').hidden = !(canSpeak || (HAS_BACKEND && recWords.has(q.item.w)));
+  $('qOptions').className = 'options ' + (q.cls==='five'?'five':'');
+  $('qOptions').innerHTML = q.options.map((o,i)=>`<button class="opt ${q.cls==='five'?'':q.cls}" data-i="${i}">${o.label}</button>`).join('');
+  $('qFeedback').innerHTML = '';
+  $('qOptions').querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>answer(+b.dataset.i)));
+  $('qPanel').classList.remove('pop'); void $('qPanel').offsetWidth; $('qPanel').classList.add('pop');
+}
+
+function answer(i){
+  if(answered) return; answered=true;
+  const q = round[qi];
+  const ok = q.options[i].correct;
+  const btns = $('qOptions').querySelectorAll('.opt');
+  btns.forEach((b,k)=>{ b.disabled=true; if(q.options[k].correct) b.classList.add('right'); });
+  if(!ok) btns[i].classList.add('wrong');
+  log.push({mode:MODE_NAMES[q.mode], w:q.item.w, zy:zyStr(q.item.syl), ok, pick:q.options[i].text, heard:!!q.heard});
+  const key = {w:q.item.w, mode:q.mode};
+  if(ok){
+    score++; streak++; state.stars++;
+    if(lastMode==='review'){ state.wrong = state.wrong.filter(x=>!(x.w===key.w && x.mode===key.mode)); }
+  } else {
+    streak=0; roundWrong.push(q);
+    if(!state.wrong.some(x=>x.w===key.w && x.mode===key.mode)) state.wrong.push(key);
+  }
+  saveStudentState();
+  $('starCount').textContent = state.stars;
+  $('streak').textContent = streak>=3 ? `連續答對 ${streak} 題！` : '';
+  $('qWord').innerHTML = wordHTML(q,true);
+  const praise = pick(['答對了！','好厲害！','完全正確！','你真棒！']);
+  const last = qi===round.length-1;
+  $('qFeedback').innerHTML = `<div class="feedback ${ok?'ok':'no'}">
+    <div><div class="msg">${ok?praise:'沒關係，記住正確答案'}</div>
+    <div class="ans">${miniWord(q.item.w, zyStr(q.item.syl))}</div></div>
+    <div class="actions">
+      <button class="btn" id="nextBtn">${last?'看成績':'下一題 →'}</button>
+    </div></div>`;
+  $('nextBtn').addEventListener('click',next);
+  $('nextBtn').focus();
+}
+
+function next(){
+  qi++;
+  if(qi>=round.length) return showResult();
+  renderQ();
+}
+
+function sendRoundLog(){
+  const a = log; log = [];
+  return sendLog(a);
+}
+
+const starSVG = on=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="${on?'#f0a91e':'#e3e8ec'}" stroke="#1c3553" stroke-width="1.5" d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg>`;
+function showResult(){
+  show('result');
+  const total = round.length;
+  const ratio = score/total;
+  const s3 = ratio>=0.9?3:ratio>=0.6?2:ratio>0?1:0;
+  $('rTitle').textContent = ratio===1?'全部答對，太厲害了！':ratio>=0.8?'很棒！差一點就全對':ratio>=0.6?'不錯喔，繼續加油':'多練幾次就會越來越熟';
+  $('rScore').textContent = `${score} / ${total}`;
+  $('rStars').innerHTML = [0,1,2].map(i=>starSVG(i<s3)).join('');
+  $('rWrong').innerHTML = roundWrong.length ? `<p class="hint">這回答錯的詞：</p><div class="wrong-list">${roundWrong.map(q=>`<span class="chip">${miniWord(q.item.w, zyStr(q.item.syl))}</span>`).join('')}</div>` : '';
+  $('rReviewBtn').hidden = !state.wrong.length;
+  $('rSent').textContent = HAS_BACKEND ? '正在把這回的成績送給老師…' : '';
+  const p = sendRoundLog();
+  if(p) p.then(ok=>{ if(ok===null) return; $('rSent').textContent = ok ? '這回的成績已經送給老師了' : '現在沒有網路，下次連上網會自動補送給老師'; });
+}
+
+// ======== 學生登入 ========
+$('loginForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name = $('nameIn').value.trim().replace(/\s+/g,'');
+  if(!name){ $('loginErr').textContent='請寫上你的名字'; $('nameIn').focus(); return; }
+  $('loginErr').textContent='';
+  student = {seat:'', name};
+  store.set('student', student);
+  loadStudentState();
+  show('home');
+});
+$('switchBtn').addEventListener('click',()=>{
+  student = null; store.set('student', null);
+  $('nameIn').value='';
+  loadStudentState();
+  show('login'); $('nameIn').focus();
+});
+
+// ======== 注音鍵盤 ========
+const KB = 'ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ';
+document.querySelectorAll('.kb').forEach(kb=>{
+  let html = KB.split('').map(c=>`<button type="button" data-k="${c}">${c}</button>`).join('');
+  html += ['ˊ','ˇ','ˋ','˙'].map(c=>`<button type="button" class="tone" data-k="${c}" aria-label="聲調 ${c}">${c}</button>`).join('');
+  html += `<button type="button" class="wide" data-k=" ">空格</button><button type="button" class="wide" data-k="\n">換行</button><button type="button" class="wide" data-k="⌫">刪除</button>`;
+  kb.innerHTML = html;
+  kb.addEventListener('click',e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    const ta = $(kb.dataset.for); const k = b.dataset.k;
+    const s = ta.selectionStart ?? ta.value.length, en = ta.selectionEnd ?? ta.value.length;
+    if(k==='⌫'){
+      if(s===en && s>0){ ta.value = ta.value.slice(0,s-1)+ta.value.slice(en); ta.selectionStart=ta.selectionEnd=s-1; }
+      else { ta.value = ta.value.slice(0,s)+ta.value.slice(en); ta.selectionStart=ta.selectionEnd=s; }
+    } else {
+      ta.value = ta.value.slice(0,s)+k+ta.value.slice(en);
+      ta.selectionStart = ta.selectionEnd = s+k.length;
+    }
+    ta.focus();
+  });
+});
+
+// ======== 家長區 ========
+function renderMine(){
+  const items = customItems();
+  $('myCount').textContent = items.length;
+  $('onlyMine').checked = state.onlyMine;
+  $('myList').innerHTML = items.length ? items.map(it=>`<span class="mychip">${miniWord(it.w, zyStr(it.syl))}<button data-del="${esc(it.w)}" aria-label="刪除 ${esc(it.w)}">刪除</button></span>`).join('') : '<span class="hint">還沒有加入任何字詞</span>';
+  $('myList').querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+    state.custom = state.custom.filter(l=>{ const p=parseLine(l); return !(p && p.w===b.dataset.del); });
+    store.set('custom',state.custom); renderMine();
+  }));
+}
+$('addBtn').addEventListener('click',()=>{
+  const {ok, errs} = validLines($('customInput').value);
+  ok.forEach(norm=>{
+    const w = norm.split(' ')[0];
+    state.custom = state.custom.filter(x=>x.split(' ')[0]!==w);
+    state.custom.push(norm);
+  });
+  store.set('custom',state.custom);
+  $('addErr').textContent = errs.join('\n');
+  $('addOk').textContent = ok.length ? `已加入 ${ok.length} 個詞` : '';
+  if(!errs.length) $('customInput').value='';
+  renderMine();
+});
+$('onlyMine').addEventListener('change',e=>{ state.onlyMine=e.target.checked; store.set('onlyMine',state.onlyMine); });
+
+// ======== 老師後台 ========
+let tKey = '';
+try{ tKey = sessionStorage.getItem('zyx-tkey') || ''; }catch(e){}
+function fmtTime(iso){
+  const d = new Date(iso); if(isNaN(d)) return '';
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function openTeacher(){
+  show('teacher');
+  if(!HAS_BACKEND){
+    $('tLogin').hidden=false; $('tMain').hidden=true;
+    $('tErr').textContent='網站還沒連上 Google 試算表後台，請先完成後台設定。';
+    return;
+  }
+  if(tKey) loadReport(); else { $('tLogin').hidden=false; $('tMain').hidden=true; $('tCode').focus(); }
+}
+async function loadReport(){
+  $('tErr').textContent='讀取中…';
+  try{
+    const r = await fetch(SCRIPT_URL+'?action=report&key='+encodeURIComponent(tKey)+'&cls='+encodeURIComponent(tClass));
+    const d = await r.json();
+    if(!d.ok){ $('tErr').textContent = d.error || '讀取失敗'; tKey=''; try{sessionStorage.removeItem('zyx-tkey');}catch(e){} $('tLogin').hidden=false; $('tMain').hidden=true; return; }
+    try{ sessionStorage.setItem('zyx-tkey', tKey); }catch(e){}
+    $('tErr').textContent='';
+    $('tLogin').hidden=true; $('tMain').hidden=false;
+    tClassNames = d.classes || {};
+    renderReport(d);
+    renderRec(); loadRecList().then(renderRec);
+    loadDiag();
+    loadClassesT();
+    loadTeacherWords();
+  }catch(e){
+    $('tErr').textContent='連不上後台，請確認網路，或確認後台部署時「誰可以存取」選了「所有人」。';
+    $('tLogin').hidden=false; $('tMain').hidden=true;
+  }
+}
+// ---- 班級 ----
+let tClass = 'all';
+try{ tClass = sessionStorage.getItem('zyx-tclass') || 'all'; }catch(e){}
+let tClassNames = {};
+let tClassList = [];
+const isOneClass = ()=> tClass!=='all' && tClass!=='_none';
+const clsLabel = id => id ? (tClassNames[id] || '（已刪除的班級）') : '未分班';
+const nameCell = s => `<td style="white-space:nowrap">${esc(s.name)}${tClass==='all'?`<div class="cls-tag">${esc(clsLabel(s.c))}</div>`:''}</td>`;
+async function loadClassesT(){
+  try{ tClassList = await fetchClasses(); }catch(e){ return; }
+  tClassList.forEach(c=>{ tClassNames[c.id]=c.name; });
+  if(isOneClass() && !tClassList.some(c=>c.id===tClass)){ tClass='all'; }
+  $('tClass').innerHTML = `<option value="all">全部班級</option>` + tClassList.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('') + `<option value="_none">未分班（舊資料）</option>`;
+  $('tClass').value = tClass;
+  $('tClassHint').textContent = tClass==='all' ? '顯示所有班級的學生，姓名下方會標出班級。' : tClass==='_none' ? '建立班級以前收集的資料。' : '';
+  renderClassMgr();
+}
+$('tClass').addEventListener('change',()=>{ tClass=$('tClass').value; try{ sessionStorage.setItem('zyx-tclass', tClass); }catch(e){} loadReport(); });
+
+const XQ_URL = location.origin + location.pathname;
+const DIAG_URL = 'https://jazzy-trifle-9635da.netlify.app/';
+function qrSVG(text){
+  const q = new QRLib.QRCode(-1, QRLib.L.M); q.addData(text); q.make();
+  const n = q.getModuleCount(), pad = 4; let d='';
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(q.isDark(r,c)) d+=`M${c+pad},${r+pad}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${n+pad*2} ${n+pad*2}" shape-rendering="crispEdges" role="img" aria-label="QR Code"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#111"/></svg>`;
+}
+let delArm = {};
+function renderClassMgr(){
+  $('classMgr').innerHTML = tClassList.length ? tClassList.map(c=>`<div class="cm-row" data-id="${esc(c.id)}">
+      <div class="cm-name"><b>${esc(c.name)}</b><small class="hint">代碼 ${esc(c.id)}</small></div>
+      <div class="rec-btns">
+        <button class="btn" data-act="qr">QR Code</button>
+        <button class="btn light" data-act="rename">改名</button>
+        <button class="btn light danger" data-act="del">${delArm[c.id] && Date.now()-delArm[c.id]<4000 ? '再按一次確定刪除' : '刪除'}</button>
+      </div></div>`).join('') : '<span class="hint">還沒有班級。在上面輸入班級名稱，按「新增班級」。</span>';
+}
+$('addClassBtn').addEventListener('click',async ()=>{
+  const name = $('newClassName').value.trim();
+  $('classMgrErr').textContent='';
+  if(!name){ $('classMgrErr').textContent='請先輸入班級名稱，例如「王老師・三年二班」'; return; }
+  if(tClassList.some(c=>c.name===name)){ $('classMgrErr').textContent='已經有同名的班級了'; return; }
+  $('addClassBtn').disabled = true;
+  try{
+    await postJSON({action:'addClass', key:tKey, name});
+    await new Promise(r=>setTimeout(r,1200));
+    $('newClassName').value='';
+    await loadClassesT();
+    const c = tClassList.find(x=>x.name===name);
+    if(c) showQR(c.id); else $('classMgrErr').textContent='好像沒有建立成功，請按「重新整理」確認';
+  }catch(e){ $('classMgrErr').textContent='新增失敗，請確認網路後再試一次'; }
+  $('addClassBtn').disabled = false;
+});
+$('classMgr').addEventListener('click',async e=>{
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const id = b.closest('.cm-row').dataset.id, c = tClassList.find(x=>x.id===id); if(!c) return;
+  $('classMgrErr').textContent='';
+  if(b.dataset.act==='qr') return showQR(id);
+  if(b.dataset.act==='rename'){
+    const row = b.closest('.cm-row');
+    row.querySelector('.cm-name').innerHTML = `<input class="cm-input" maxlength="30" value="${esc(c.name)}" aria-label="新的班級名稱">`;
+    row.querySelector('.rec-btns').innerHTML = `<button class="btn" data-act="saveName">儲存</button><button class="btn light" data-act="cancel">取消</button>`;
+    row.querySelector('.cm-input').focus();
+    return;
+  }
+  if(b.dataset.act==='cancel') return renderClassMgr();
+  if(b.dataset.act==='saveName'){
+    const nm = b.closest('.cm-row').querySelector('.cm-input').value.trim(); if(!nm) return;
+    b.disabled = true;
+    try{ await postJSON({action:'renameClass', key:tKey, c:id, name:nm}); await new Promise(r=>setTimeout(r,1000)); await loadClassesT(); }
+    catch(err){ $('classMgrErr').textContent='改名失敗，請再試一次'; renderClassMgr(); }
+    return;
+  }
+  if(b.dataset.act==='del'){
+    if(!(delArm[id] && Date.now()-delArm[id]<4000)){ delArm[id]=Date.now(); renderClassMgr(); setTimeout(renderClassMgr,4100); return; }
+    delete delArm[id]; b.disabled = true;
+    try{ await postJSON({action:'delClass', key:tKey, c:id}); await new Promise(r=>setTimeout(r,1000)); if(tClass===id){ tClass='all'; } $('qrView').hidden=true; await loadClassesT(); }
+    catch(err){ $('classMgrErr').textContent='刪除失敗，請再試一次'; }
+  }
+});
+function showQR(id){
+  const c = tClassList.find(x=>x.id===id); if(!c) return;
+  const u1 = XQ_URL + '#c-' + id, u2 = DIAG_URL + '#c-' + id;
+  $('qrView').hidden = false;
+  $('qrView').innerHTML = `<div class="qr-sheet" id="qrSheet">
+      <h3>${esc(c.name)}</h3>
+      <div class="qr-pair">
+        <figure><div class="qr-box">${qrSVG(u1)}</div><figcaption><b>注音小學堂</b><span>每天練習</span></figcaption></figure>
+        <figure><div class="qr-box diag">${qrSVG(u2)}</div><figcaption><b>注音診斷站</b><span>前測・後測（老師說可以再做）</span></figcaption></figure>
+      </div>
+      <p class="qr-note">用 iPad 相機掃描，輸入名字就能開始。兩個網站的名字要寫一樣。</p>
+    </div>
+    <div class="actions no-print"><button class="btn" id="printQR">列印這一班的 QR Code</button><button class="btn light" id="closeQR">關閉</button></div>`;
+  $('printQR').addEventListener('click',()=>{ document.body.classList.add('print-qr'); try{ window.print(); }catch(e){} setTimeout(()=>document.body.classList.remove('print-qr'),500); });
+  $('closeQR').addEventListener('click',()=>{ $('qrView').hidden=true; });
+  $('qrView').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ---- 各班字詞 ----
+async function loadTeacherWords(){
+  const one = isOneClass();
+  $('wordsNeedClass').hidden = one; $('wordsEditor').hidden = !one;
+  $('wordsClassName').textContent = one ? `（${clsLabel(tClass)}）` : '';
+  if(!one) return;
+  try{
+    const d = await (await fetch(SCRIPT_URL+'?action=words&cls='+encodeURIComponent(tClass))).json();
+    if(d && d.ok){ $('classInput').value = (d.words||[]).join('\n'); $('onlyClass').checked = !!d.onlyClass; }
+  }catch(e){}
+}
+
+function renderReport(d){
+  $('tUpdated').textContent = `更新時間 ${fmtTime(d.updated)}，共 ${d.students.length} 位學生`;
+  $('tTop').innerHTML = d.top.length ? d.top.map(t=>`<span class="topchip">${miniWord(t.w, t.zy)} <small>${t.students} 人錯，共 ${t.wrong} 次</small></span>`).join('') : '<span class="hint">還沒有錯題紀錄</span>';
+  const snd = d.sounds||[];
+  const chipS = x=>{ const [a,b]=x.key.split(' → '); return `<span class="topchip snd"><span class="pair"><b>${esc(a)}</b><span class="arr">選成</span><b class="bad">${esc(b)}</b></span><small>${x.students} 人，共 ${x.count} 次</small></span>`; };
+  const sSound = snd.filter(x=>x.type==='sound'), sTone = snd.filter(x=>x.type==='tone');
+  $('tSoundLetters').innerHTML = sSound.length ? sSound.slice(0,10).map(chipS).join('') : '<span class="hint">還沒有易混淆音的錯誤</span>';
+  $('tSoundTones').innerHTML = sTone.length ? sTone.slice(0,10).map(chipS).join('') : '<span class="hint">還沒有聲調的錯誤</span>';
+  $('tBody').innerHTML = d.students.length ? d.students.map(s=>{
+    const rate = s.total ? Math.round(s.right/s.total*100) : 0;
+    const cls = rate>=85?'hi':rate>=60?'mid':'lo';
+    const weak = s.weak.length ? s.weak.map(w=>`<span class="wchip${w.lastOk?' done':''}" title="${esc(w.picks.join('、'))}">${miniWord(w.w, w.zy)}${w.lastOk?'':`<b>×${w.wrong}</b>`}</span>`).join('') : '<span class="hint">沒有錯題</span>';
+    return `<tr>${nameCell(s)}<td class="num">${s.total}</td><td class="num"><span class="rate ${cls}">${rate}%</span>${s.heardRight?`<div class="heard">自己答對 ${s.total?Math.round((s.right-s.heardRight)/s.total*100):0}%<br><span class="ear">聽</span>聽了才答對 ${s.heardRight} 題</div>`:''}</td><td class="num">${fmtTime(s.last)}</td><td><div class="weak">${(s.sounds||[]).length ? s.sounds.map(x=>{ const [a,b]=x.key.split(' → '); return `<span class="schip">${esc(a)}<span class="arr">→</span>${esc(b)}<b>×${x.count}</b></span>`; }).join('') : '<span class="hint">—</span>'}</div></td><td><div class="weak">${weak}</div></td></tr>`;
+  }).join('') : '<tr><td colspan="6" class="hint">還沒有學生的練習紀錄。學生練完一回後，紀錄就會出現在這裡。</td></tr>';
+}
+$('tLogin').addEventListener('submit',e=>{ e.preventDefault(); if(!HAS_BACKEND) return; tKey=$('tCode').value.trim(); if(!tKey){ $('tErr').textContent='請輸入老師密碼'; return; } loadReport(); });
+$('tRefresh').addEventListener('click',loadReport);
+$('saveClass').addEventListener('click',async ()=>{
+  const {ok, errs} = validLines($('classInput').value);
+  $('classErr').textContent = errs.join('\n');
+  $('classOk').textContent = '';
+  if(errs.length) return;
+  const only = $('onlyClass').checked;
+  if(only && ok.length<4){ $('classErr').textContent='要「全班只練這些字詞」，至少要有 4 個詞'; return; }
+  if(!isOneClass()){ $('classErr').textContent='請先在最上面選一個班級'; return; }
+  $('classOk').textContent='儲存中…';
+  try{
+    await postJSON({action:'setWords', key:tKey, c:tClass, words:ok, onlyClass:only});
+    await new Promise(r=>setTimeout(r,1200));
+    const d = await (await fetch(SCRIPT_URL+'?action=words&cls='+encodeURIComponent(tClass))).json();
+    $('classOk').textContent = d && (d.words||[]).length===ok.length ? `已儲存 ${ok.length} 個詞，${clsLabel(tClass)}的學生下次打開網站就會拿到` : '已送出，請按「重新整理」確認';
+  }catch(e){ $('classOk').textContent=''; $('classErr').textContent='儲存失敗，請確認網路後再試一次'; }
+});
+$('teacherLink').addEventListener('click',openTeacher);
+
+// ---- 老師錄音介面 ----
+const recState = {};   // w -> {phase:'idle'|'rec'|'review'|'saving', wav}
+let recActive = null;  // {w, mr, stream, timer}
+function hasLight(it){ return it.syl.some(s=>s.t===5); }
+function renderRec(){
+  const only = $('recOnlyLight').checked;
+  const items = allItems().filter(it=>!only || hasLight(it));
+  const done = items.filter(it=>recWords.has(it.w)).length;
+  $('recCount').textContent = `已錄 ${done} / ${items.length} 個詞`;
+  $('recList').innerHTML = items.map(it=>{
+    const st = recState[it.w] || {phase:'idle'};
+    const has = recWords.has(it.w);
+    let btns = '';
+    if(st.phase==='rec') btns = `<button class="btn rec-on" data-act="stop">停止</button><span class="hint">錄音中…</span>`;
+    else if(st.phase==='review') btns = `<button class="btn" data-act="save">儲存</button><button class="btn light" data-act="preview">再聽一次</button><button class="btn light" data-act="rec">重錄</button>`;
+    else if(st.phase==='saving') btns = `<span class="hint">儲存中…</span>`;
+    else btns = `<button class="btn light" data-act="rec">${has?'重新錄音':'錄音'}</button>${has?`<button class="btn light" data-act="play">播放</button><button class="btn light danger" data-act="del">刪除</button>`:''}`;
+    return `<div class="rec-row" data-w="${esc(it.w)}"><div class="rec-word">${miniWord(it.w, zyStr(it.syl))}</div><span class="pill ${has?'on':''}">${has?'已錄音':'未錄音'}</span><div class="rec-btns">${btns}</div></div>`;
+  }).join('') || '<span class="hint">沒有符合的詞</span>';
+}
+$('recOnlyLight').addEventListener('change',renderRec);
+
+// ---- 診斷報告 ----
+const SKILLS = ['拼讀','認讀','一聲','二聲','三聲','四聲','輕聲','ㄓㄗ','ㄔㄘ','ㄕㄙ','ㄣㄥ','ㄢㄤ','ㄋㄌ','ㄈㄏ'];
+const SKILL_GROUP = {'拼讀':'整體','認讀':'整體','一聲':'聲調','二聲':'聲調','三聲':'聲調','四聲':'聲調','輕聲':'聲調'};
+async function loadDiag(){
+  $('diagErr').textContent='';
+  try{
+    const d = await (await fetch(SCRIPT_URL+'?action=diagReport&key='+encodeURIComponent(tKey)+'&cls='+encodeURIComponent(tClass))).json();
+    if(!d.ok){ $('diagErr').textContent = d.error||'讀取診斷資料失敗'; return; }
+    renderDiag(d);
+  }catch(e){ $('diagErr').textContent='讀取診斷資料失敗，請按「重新整理」再試一次。後台程式要更新到有診斷功能的版本。'; }
+}
+function pct(r,n){ return n ? Math.round(r/n*100) : null; }
+function renderDiag(d){
+  if(d.classes) Object.assign(tClassNames, d.classes);
+  const one = isOneClass();
+  document.querySelectorAll('input[name=dphase]').forEach(r=>{ r.checked = one && r.value===d.phase; r.disabled = !one; });
+  $('savePhase').disabled = !one;
+  $('phaseClassName').textContent = one ? `（${clsLabel(tClass)}）` : '（請先在最上面選一個班級）';
+  const agg = {pre:{}, post:{}, pairPre:{}, pairPost:{}};
+  const add = (bucket,x)=>SKILLS.forEach(k=>{ const v=x.skills[k]; if(!v) return; const a=bucket[k]||(bucket[k]={n:0,r:0}); a.n+=v.n; a.r+=v.right; });
+  d.students.forEach(st=>{ if(st.pre) add(agg.pre,st.pre); if(st.post) add(agg.post,st.post); if(st.pre&&st.post){ add(agg.pairPre,st.pre); add(agg.pairPost,st.post); } });
+  const bar = v => v==null ? '<span class="hint">—</span>' : `<span class="pbar"><i style="width:${v}%" class="${v>=85?'hi':v>=60?'mid':'lo'}"></i></span><span class="pnum">${v}%</span>`;
+  const preN = d.students.filter(s=>s.pre).length, postN = d.students.filter(s=>s.post).length;
+  $('dSkills').innerHTML = SKILLS.map(k=>{
+    const a=agg.pre[k], b=agg.post[k];
+    const pa=a?pct(a.r,a.n):null, pb=b?pct(b.r,b.n):null;
+    const c1=agg.pairPre[k], c2=agg.pairPost[k];
+    const diff = c1&&c2 ? pct(c2.r,c2.n)-pct(c1.r,c1.n) : null;
+    return `<tr><td><span class="sk">${esc(k)}</span><small class="hint"> ${SKILL_GROUP[k]||'易混淆音'}</small></td><td>${bar(pa)}</td><td>${bar(pb)}</td><td class="num">${diff==null?'<span class="hint">—</span>':`<b class="${diff>0?'up':diff<0?'down':''}">${diff>0?'+':''}${diff}</b>`}</td></tr>`;
+  }).join('') + `<tr><td class="hint" colspan="4">前測 ${preN} 人、後測 ${postN} 人。「進步」只算前測和後測都做過的 ${d.students.filter(s=>s.pre&&s.post).length} 位學生。</td></tr>`;
+  $('dHead').innerHTML = `<tr><th>姓名</th><th>前測</th><th>後測</th>${SKILLS.map(k=>`<th class="skh">${esc(k)}</th>`).join('')}</tr>`;
+  $('dBody').innerHTML = d.students.length ? d.students.map(st=>{
+    const tot = x => x ? `<span class="rate ${pct(x.right,x.total)>=85?'hi':pct(x.right,x.total)>=60?'mid':'lo'}">${x.right}/${x.total}</span>${x.heard?`<div class="heard"><span class="ear">聽</span>${x.heard} 題</div>`:''}` : '<span class="hint">未做</span>';
+    const cells = SKILLS.map(k=>{
+      const a = st.pre && st.pre.skills[k], b = st.post && st.post.skills[k];
+      const last = b || a;
+      if(!last) return '<td class="hint">—</td>';
+      const cls = last.right===last.n ? 'full' : last.right===0 ? 'none' : 'half';
+      const txt = a && b ? `${a.right}→${b.right}` : `${last.right}`;
+      const tip = `${k}：${a?`前測 ${a.right}/${a.n}`:''}${a&&b?'，':''}${b?`後測 ${b.right}/${b.n}`:''}`;
+      return `<td><span class="dc ${cls}" title="${esc(tip)}">${txt}</span></td>`;
+    }).join('');
+    return `<tr>${nameCell(st)}<td class="num">${tot(st.pre)}</td><td class="num">${tot(st.post)}</td>${cells}</tr>`;
+  }).join('') : `<tr><td colspan="${SKILLS.length+3}" class="hint">還沒有學生做診斷測驗。</td></tr>`;
+}
+$('savePhase').addEventListener('click',async ()=>{
+  const r = document.querySelector('input[name=dphase]:checked'); if(!r) return;
+  $('phaseOk').textContent='儲存中…';
+  if(!isOneClass()) return;
+  try{ await postJSON({action:'setDiagPhase', key:tKey, c:tClass, phase:r.value}); await new Promise(x=>setTimeout(x,1000)); await loadDiag(); $('phaseOk').textContent=`已設定為「${r.value}」`; }
+  catch(e){ $('phaseOk').textContent=''; $('diagErr').textContent='儲存失敗，請確認網路後再試一次'; }
+});
+$('recList').addEventListener('click',async e=>{
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const w = b.closest('.rec-row').dataset.w, act = b.dataset.act;
+  $('recErr').textContent='';
+  if(act==='rec') return startRec(w);
+  if(act==='stop') return stopRec();
+  if(act==='preview'){ const st=recState[w]; if(st&&st.wav) playUrl(st.wav.url).catch(()=>{}); return; }
+  if(act==='play'){ fetchAudio(w).then(playUrl).catch(()=>{ $('recErr').textContent='播放失敗，請按「重新整理」再試一次'; }); return; }
+  if(act==='save'){
+    const st = recState[w]; if(!st||!st.wav) return;
+    recState[w] = {phase:'saving', wav:st.wav}; renderRec();
+    try{
+      await postJSON({action:'setAudio', key:tKey, w, mime:'audio/wav', data:st.wav.b64});
+      await new Promise(r=>setTimeout(r,1500));
+      await loadRecList();
+      if(recWords.has(w)){ audioCache[w]=st.wav.url; delete recState[w]; }
+      else { recState[w]={phase:'review', wav:st.wav}; $('recErr').textContent='好像沒有存成功，請再按一次「儲存」'; }
+    }catch(err){ recState[w]={phase:'review', wav:st.wav}; $('recErr').textContent='儲存失敗，請確認網路後再試一次'; }
+    return renderRec();
+  }
+  if(act==='del'){
+    b.disabled = true;
+    try{ await postJSON({action:'delAudio', key:tKey, w}); await new Promise(r=>setTimeout(r,1200)); await loadRecList(); delete audioCache[w]; }
+    catch(err){ $('recErr').textContent='刪除失敗，請確認網路後再試一次'; }
+    return renderRec();
+  }
+});
+async function startRec(w){
+  if(recActive) stopRec();
+  if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder)){
+    $('recErr').textContent='這個瀏覽器不能錄音，請改用 iPad 的 Safari 或電腦的 Chrome。'; return;
+  }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(err){ $('recErr').textContent='沒有拿到麥克風權限。請在瀏覽器設定裡允許這個網站使用麥克風，再按一次「錄音」。'; return; }
+  const mr = new MediaRecorder(stream); const chunks=[];
+  mr.ondataavailable = ev=>{ if(ev.data && ev.data.size) chunks.push(ev.data); };
+  mr.onstop = async ()=>{
+    stream.getTracks().forEach(t=>t.stop());
+    try{
+      const wav = await toWav(new Blob(chunks,{type:mr.mimeType||'audio/mp4'}));
+      recState[w] = {phase:'review', wav}; renderRec();
+      playUrl(wav.url).catch(()=>{});
+    }catch(err){
+      delete recState[w]; renderRec();
+      $('recErr').textContent = err && err.message==='quiet' ? '沒有錄到聲音，請靠近麥克風再錄一次。' : '錄音處理失敗，請再錄一次。';
+    }
+  };
+  recActive = {w, mr, timer:setTimeout(stopRec, 3000)};
+  recState[w] = {phase:'rec'}; renderRec();
+  mr.start();
+}
+function stopRec(){
+  if(!recActive) return;
+  clearTimeout(recActive.timer);
+  const {mr} = recActive; recActive = null;
+  try{ if(mr.state!=='inactive') mr.stop(); }catch(e){}
+}
+$('qSay').innerHTML = speakerSVG + '聽聽看';
+document.querySelectorAll('[data-zy]').forEach(el=>{ el.innerHTML = optZy(el.dataset.zy); });
+$('qSay').addEventListener('click',()=>{ const q=round[qi]; if(!q) return; if(!answered) q.heard=true; speakWord(q.item.w); });
+$('teacherBack').addEventListener('click',goHome);
+
+// ======== 事件 ========
+document.querySelectorAll('.mode[data-mode]').forEach(b=>b.addEventListener('click',()=>startRound(b.dataset.mode)));
+$('homeBtn').addEventListener('click',goHome);
+$('quitBtn').addEventListener('click',()=>{ sendRoundLog(); goHome(); });
+$('rHomeBtn').addEventListener('click',goHome);
+$('againBtn').addEventListener('click',()=>startRound(lastMode==='review'&&!state.wrong.length?'mix':lastMode));
+$('rReviewBtn').addEventListener('click',()=>startRound('review'));
+$('parentBtn').addEventListener('click',()=>{ show('parent'); renderMine(); });
+$('parentBack').addEventListener('click',goHome);
+if(location.hash==='#teacher') openTeacher(); else goHome();
+loadClassWords();
+loadRecList();
+flushPending();
+</script>
+</body>
+</html>
