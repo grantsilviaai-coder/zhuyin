@@ -138,6 +138,7 @@ function getOnlyClass_() {
 }
 
 function buildReport_(c) {
+  try { ensureClassViews_(); } catch (err) {}
   const sh = sheet_(LOG_SHEET, ['時間', '姓名', '題型', '詞語', '注音', '結果', '學生選的答案', '作答前有聽']);
   const n = sh.getLastRow();
   const rows = (n < 2 ? [] : sh.getRange(2, 1, n - 1, 9).getValues()).filter(function (r) { return inClass_(c, r[8]); });
@@ -366,6 +367,7 @@ function addClass_(name) {
   let id;
   do { id = Math.random().toString(36).slice(2, 8); } while (ids.indexOf(id) >= 0 || !/^[a-z]/.test(id));
   sh.appendRow([id, name, '否', '前測', '']);
+  ensureClassViews_();
   return { ok: true, id: id };
 }
 
@@ -377,12 +379,14 @@ function updateClass_(id, ch) {
   if ('onlyClass' in ch) sh.getRange(c.row, 3).setValue(ch.onlyClass ? '是' : '否');
   if ('diagPhase' in ch) sh.getRange(c.row, 4).setValue(ch.diagPhase);
   if ('words' in ch) sh.getRange(c.row, 5).setValue(ch.words.map(function (w) { return safe_(w, 60); }).join('\n'));
+  if ('name' in ch) ensureClassViews_();
   return { ok: true };
 }
 
 function deleteClass_(id) {
   const c = findClass_(id);
   if (c) classSheet_().deleteRow(c.row);
+  ensureClassViews_();
   return { ok: true };   // 作答紀錄不會刪除，只是不再列出這個班級
 }
 
@@ -404,4 +408,48 @@ function moveStudent_(name, from, to) {
     if (changed) sh.getRange(2, cfg[2], n, 1).setValues(cls);
   });
   return { ok: true, moved: moved };
+}
+
+// ===== 試算表裡每班的檢視工作表（自動跟著「作答紀錄」「診斷紀錄」更新，只能看、改了也不影響原始資料） =====
+function viewSheetName_(name, kind) {
+  return (String(name).replace(/[\[\]\*\?\/\\:']/g, '').trim() || '班級').slice(0, 80) + (kind === 'p' ? ' 練習' : ' 前後測');
+}
+function ensureClassViews_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  sheet_(LOG_SHEET, ['時間', '姓名', '題型', '詞語', '注音', '結果', '學生選的答案', '作答前有聽']);
+  const dsh = sheet_(DIAG_SHEET, DIAG_HEADER);
+  if (dsh.getRange(1, 13).getValue() === '') dsh.getRange(1, 13).setValue('班級代碼');
+  const lsh = ss.getSheetByName(LOG_SHEET);
+  if (lsh.getRange(1, 9).getValue() === '') lsh.getRange(1, 9).setValue('班級代碼');
+  const props = PropertiesService.getScriptProperties();
+  let views = {};
+  try { views = JSON.parse(props.getProperty('classViews') || '{}'); } catch (e) {}
+  const cls = classes_();
+  const keep = {};
+  cls.forEach(function (c) {
+    const want = { p: viewSheetName_(c.name, 'p'), d: viewSheetName_(c.name, 'd') };
+    const had = views[c.id] || {};
+    ['p', 'd'].forEach(function (k) {
+      let sh = had[k] ? ss.getSheetByName(had[k]) : null;
+      if (sh && had[k] !== want[k] && !ss.getSheetByName(want[k])) sh.setName(want[k]);
+      if (!sh) sh = ss.getSheetByName(want[k]);
+      if (!sh) {
+        try { sh = ss.insertSheet(want[k]); } catch (e) { sh = ss.getSheetByName(want[k]); }
+        if (!sh) return;
+      }
+      const f = k === 'p'
+        ? '=QUERY(\'' + LOG_SHEET + '\'!A:I,"select A,B,C,D,E,F,G,H where I = \'' + c.id + '\'",1)'
+        : '=QUERY(\'' + DIAG_SHEET + '\'!A:M,"select A,B,C,D,E,F,G,H,I,J,K,L where M = \'' + c.id + '\'",1)';
+      if (sh.getRange(1, 1).getFormula() !== f) { sh.clear(); sh.getRange(1, 1).setFormula(f); sh.setFrozenRows(1); }
+      sh.setTabColor(k === 'p' ? '#1f62b0' : '#0f766e');
+      want[k] = sh.getName();
+    });
+    keep[c.id] = want;
+  });
+  // 刪除已經不存在的班級的檢視工作表
+  Object.keys(views).forEach(function (id) {
+    if (keep[id]) return;
+    ['p', 'd'].forEach(function (k) { const sh = views[id][k] && ss.getSheetByName(views[id][k]); if (sh && ss.getSheets().length > 1) ss.deleteSheet(sh); });
+  });
+  props.setProperty('classViews', JSON.stringify(keep));
 }
