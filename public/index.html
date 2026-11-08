@@ -309,6 +309,11 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
 .move-ctl{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .move-ctl select{font-size:14px;padding:3px 6px;border:1.5px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);max-width:170px}
 .move-ctl .btn{font-size:13px;padding:3px 10px;box-shadow:2px 2px 0 var(--ink)}
+
+.class-chips{display:flex;flex-wrap:wrap;gap:8px}
+.cls-chip{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:6px 16px;font-size:17px;font-weight:700}
+.cls-chip:hover{background:var(--accent-soft)}
+.cls-chip.on{background:var(--ink);color:#fff}
 </style>
 </head>
 <body>
@@ -482,21 +487,22 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
     </form>
     <div id="tMain" class="section-gap" hidden>
       <div class="panel class-bar">
-        <label for="tClass" style="font-weight:700">查看班級</label>
-        <select id="tClass"></select>
+        <span style="font-weight:700">查看班級</span>
+        <div class="class-chips" id="tClassChips" role="group" aria-label="查看班級"></div>
+        <select id="tClass" hidden aria-hidden="true"></select>
         <span class="hint" id="tClassHint"></span>
       </div>
       <div class="panel section-gap">
         <div class="topbar" style="margin:0">
-          <div><h2 style="margin:0">全班練習狀況</h2><span class="hint" id="tUpdated"></span></div>
+          <div><h2 style="margin:0"><span class="scope-name"></span>練習狀況</h2><span class="hint" id="tUpdated"></span></div>
           <button class="btn light" id="tRefresh">重新整理</button>
         </div>
         <div>
-          <h3 style="margin:0 0 8px;font-size:18px">全班最常錯的詞</h3>
+          <h3 style="margin:0 0 8px;font-size:18px">最常錯的詞</h3>
           <div class="top" id="tTop"></div>
         </div>
         <div>
-          <h3 style="margin:0 0 4px;font-size:18px">全班常錯的音</h3>
+          <h3 style="margin:0 0 4px;font-size:18px">常錯的音</h3>
           <p class="hint" style="margin:0 0 8px">左邊是正確的音，右邊是學生選成的音。統計來自「看字選注音」、「聲調」、「易混淆音」三種題型。</p>
           <div class="sound-grid">
             <div><h4>易混淆音</h4><div class="top" id="tSoundLetters"></div></div>
@@ -514,7 +520,7 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
       </div>
       <div class="panel section-gap" id="diagPanel">
         <div class="topbar" style="margin:0">
-          <div><h2 style="margin:0">診斷報告</h2><span class="hint">前測用 A 卷、後測用 B 卷（題型相同、詞語不同），每位學生各取最近一次。</span></div>
+          <div><h2 style="margin:0"><span class="scope-name"></span>診斷報告</h2><span class="hint">前測用 A 卷、後測用 B 卷（題型相同、詞語不同），每位學生各取最近一次。</span></div>
         </div>
         <div class="phase-box">
           <span style="font-weight:700">學生首頁現在出現<span id="phaseClassName"></span>：</span>
@@ -525,7 +531,7 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
           <span class="okmsg" id="phaseOk" aria-live="polite"></span>
         </div>
         <div>
-          <h3 style="margin:0 0 8px;font-size:18px">全班各項能力</h3>
+          <h3 style="margin:0 0 8px;font-size:18px">各項能力</h3>
           <div class="tbl-wrap"><table class="skill-tbl"><thead><tr><th>能力</th><th>前測答對率</th><th>後測答對率</th><th>進步</th></tr></thead><tbody id="dSkills"></tbody></table></div>
         </div>
         <div>
@@ -2526,9 +2532,18 @@ async function loadClassesT(){
   if(isOneClass() && !tClassList.some(c=>c.id===tClass)){ tClass='all'; }
   $('tClass').innerHTML = `<option value="all">全部班級</option>` + tClassList.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('') + `<option value="_none">未分班（舊資料）</option>`;
   $('tClass').value = tClass;
+  // 一排按鈕：全部班級、各班、未分班
+  const chips = [['all','全部班級']].concat(tClassList.map(c=>[c.id,c.name]), [['_none','未分班']]);
+  $('tClassChips').innerHTML = chips.map(([id,nm])=>`<button type="button" class="cls-chip${id===tClass?' on':''}" data-id="${esc(id)}" aria-pressed="${id===tClass}">${esc(nm)}</button>`).join('');
+  const scope = tClass==='all' ? '全部班級的' : tClass==='_none' ? '未分班的' : `${clsLabel(tClass)} 的`;
+  document.querySelectorAll('.scope-name').forEach(el=>{ el.textContent = scope; });
   $('tClassHint').textContent = tClass==='all' ? '顯示所有班級的學生，姓名下方會標出班級。' : tClass==='_none' ? '建立班級以前收集的資料。' : '';
   renderClassMgr();
 }
+$('tClassChips').addEventListener('click',e=>{
+  const b = e.target.closest('.cls-chip'); if(!b || b.dataset.id===tClass) return;
+  $('tClass').value = b.dataset.id; $('tClass').dispatchEvent(new Event('change'));
+});
 $('tClass').addEventListener('change',()=>{ tClass=$('tClass').value; try{ sessionStorage.setItem('zyx-tclass', tClass); }catch(e){} loadReport(); });
 
 const XQ_URL = location.origin + location.pathname;

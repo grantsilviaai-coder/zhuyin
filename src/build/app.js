@@ -593,9 +593,18 @@ async function loadClassesT(){
   if(isOneClass() && !tClassList.some(c=>c.id===tClass)){ tClass='all'; }
   $('tClass').innerHTML = `<option value="all">全部班級</option>` + tClassList.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('') + `<option value="_none">未分班（舊資料）</option>`;
   $('tClass').value = tClass;
+  // 一排按鈕：全部班級、各班、未分班
+  const chips = [['all','全部班級']].concat(tClassList.map(c=>[c.id,c.name]), [['_none','未分班']]);
+  $('tClassChips').innerHTML = chips.map(([id,nm])=>`<button type="button" class="cls-chip${id===tClass?' on':''}" data-id="${esc(id)}" aria-pressed="${id===tClass}">${esc(nm)}</button>`).join('');
+  const scope = tClass==='all' ? '全部班級的' : tClass==='_none' ? '未分班的' : `${clsLabel(tClass)} 的`;
+  document.querySelectorAll('.scope-name').forEach(el=>{ el.textContent = scope; });
   $('tClassHint').textContent = tClass==='all' ? '顯示所有班級的學生，姓名下方會標出班級。' : tClass==='_none' ? '建立班級以前收集的資料。' : '';
   renderClassMgr();
 }
+$('tClassChips').addEventListener('click',e=>{
+  const b = e.target.closest('.cls-chip'); if(!b || b.dataset.id===tClass) return;
+  $('tClass').value = b.dataset.id; $('tClass').dispatchEvent(new Event('change'));
+});
 $('tClass').addEventListener('change',()=>{ tClass=$('tClass').value; try{ sessionStorage.setItem('zyx-tclass', tClass); }catch(e){} loadReport(); });
 
 const XQ_URL = location.origin + location.pathname;

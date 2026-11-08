@@ -169,21 +169,22 @@
     </form>
     <div id="tMain" class="section-gap" hidden>
       <div class="panel class-bar">
-        <label for="tClass" style="font-weight:700">查看班級</label>
-        <select id="tClass"></select>
+        <span style="font-weight:700">查看班級</span>
+        <div class="class-chips" id="tClassChips" role="group" aria-label="查看班級"></div>
+        <select id="tClass" hidden aria-hidden="true"></select>
         <span class="hint" id="tClassHint"></span>
       </div>
       <div class="panel section-gap">
         <div class="topbar" style="margin:0">
-          <div><h2 style="margin:0">全班練習狀況</h2><span class="hint" id="tUpdated"></span></div>
+          <div><h2 style="margin:0"><span class="scope-name"></span>練習狀況</h2><span class="hint" id="tUpdated"></span></div>
           <button class="btn light" id="tRefresh">重新整理</button>
         </div>
         <div>
-          <h3 style="margin:0 0 8px;font-size:18px">全班最常錯的詞</h3>
+          <h3 style="margin:0 0 8px;font-size:18px">最常錯的詞</h3>
           <div class="top" id="tTop"></div>
         </div>
         <div>
-          <h3 style="margin:0 0 4px;font-size:18px">全班常錯的音</h3>
+          <h3 style="margin:0 0 4px;font-size:18px">常錯的音</h3>
           <p class="hint" style="margin:0 0 8px">左邊是正確的音，右邊是學生選成的音。統計來自「看字選注音」、「聲調」、「易混淆音」三種題型。</p>
           <div class="sound-grid">
             <div><h4>易混淆音</h4><div class="top" id="tSoundLetters"></div></div>
@@ -201,7 +202,7 @@
       </div>
       <div class="panel section-gap" id="diagPanel">
         <div class="topbar" style="margin:0">
-          <div><h2 style="margin:0">診斷報告</h2><span class="hint">前測用 A 卷、後測用 B 卷（題型相同、詞語不同），每位學生各取最近一次。</span></div>
+          <div><h2 style="margin:0"><span class="scope-name"></span>診斷報告</h2><span class="hint">前測用 A 卷、後測用 B 卷（題型相同、詞語不同），每位學生各取最近一次。</span></div>
         </div>
         <div class="phase-box">
           <span style="font-weight:700">學生首頁現在出現<span id="phaseClassName"></span>：</span>
@@ -212,7 +213,7 @@
           <span class="okmsg" id="phaseOk" aria-live="polite"></span>
         </div>
         <div>
-          <h3 style="margin:0 0 8px;font-size:18px">全班各項能力</h3>
+          <h3 style="margin:0 0 8px;font-size:18px">各項能力</h3>
           <div class="tbl-wrap"><table class="skill-tbl"><thead><tr><th>能力</th><th>前測答對率</th><th>後測答對率</th><th>進步</th></tr></thead><tbody id="dSkills"></tbody></table></div>
         </div>
         <div>
