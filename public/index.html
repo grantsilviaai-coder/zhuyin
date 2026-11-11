@@ -314,6 +314,9 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
 .cls-chip{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:6px 16px;font-size:17px;font-weight:700}
 .cls-chip:hover{background:var(--accent-soft)}
 .cls-chip.on{background:var(--ink);color:#fff}
+
+.voice-sel{font-size:18px;padding:8px 10px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);font-family:var(--font-body);max-width:100%}
+#voiceRate{width:100%;max-width:360px}
 </style>
 </head>
 <body>
@@ -472,6 +475,14 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
         <label class="toggle"><input type="checkbox" id="onlyMine"> 只練習這些字詞</label>
         <p class="hint" style="margin:4px 0 10px">勾選後，所有題型都只會出這些詞（至少要有 4 個詞）。</p>
         <div class="mylist" id="myList"></div>
+      </div>
+      <div id="voicePanel" class="section-gap">
+        <h2 style="font-size:22px;margin:0">聲音設定（這台裝置）</h2>
+        <p class="hint" style="margin:0">網站會自動挑這台裝置上最自然的中文聲音。也可以自己選，選好會自動試聽。老師錄過音的詞，一律播放老師的聲音。</p>
+        <div class="field"><label for="voiceSel">聲音</label><select id="voiceSel" class="voice-sel"></select></div>
+        <div class="field"><label for="voiceRate">語速：<span id="voiceRateTxt">0.90 倍</span></label><input id="voiceRate" type="range" min="0.6" max="1.1" step="0.05" value="0.9"></div>
+        <div class="actions"><button class="btn" id="voiceTest" type="button">試聽</button><button class="btn light" id="voiceAuto" type="button">恢復自動選擇</button></div>
+        <div class="notice" id="voiceTip" hidden><b>想要更自然的聲音？</b>iPad：設定 → 輔助使用 → 朗讀內容 → 聲音 → 中文（台灣）→ 下載「美佳（增強版）」或「高音質」的聲音。下載後重新打開網站，就會自動使用。</div>
       </div>
     </div>
   </section>
@@ -2088,18 +2099,41 @@ async function sendLog(answers){
 
 // ======== 朗讀 ========
 const canSpeak = 'speechSynthesis' in window;
+// ---- 挑最自然的中文語音 ----
+// 台灣口音優先；同樣是台灣口音時，「增強版／高音質／自然／Neural／Google」這類比較像真人的聲音優先
+function zhVoices(){
+  try{ return speechSynthesis.getVoices().filter(v=>/^zh|^cmn|^yue/i.test(v.lang) || /Chinese|中文|國語|普通話|台灣|臺灣/i.test(v.name)); }catch(e){ return []; }
+}
+function voiceScore(v){
+  let s = 0;
+  if(/zh[-_]TW|zh[-_]Hant|cmn[-_]Hant[-_]TW/i.test(v.lang) || /台灣|臺灣|Taiwan/i.test(v.name)) s += 100;
+  else if(/zh[-_]CN|cmn|zh[-_]Hans/i.test(v.lang)) s += 30;
+  else if(/yue|zh[-_]HK/i.test(v.lang)) s += 5;
+  if(/Enhanced|Premium|增強|高音質|優化|Natural|自然|Neural|Online/i.test(v.name)) s += 40;
+  if(/Google/i.test(v.name)) s += 25;
+  if(/Mei-?Jia|美佳|HsiaoChen|曉臻|HsiaoYu|曉雨|YunJhe|雲哲|Hanhan|涵涵/i.test(v.name)) s += 10;
+  if(/Compact|Eloquence|eSpeak/i.test(v.name)) s -= 50;
+  if(v.localService === false) s += 5;
+  return s;
+}
+function pickVoice(){
+  const vs = zhVoices(); if(!vs.length) return null;
+  const chosen = store.get('voiceName', '');
+  if(chosen){ const v = vs.find(x=>x.name===chosen); if(v) return v; }
+  return vs.slice().sort((a,b)=>voiceScore(b)-voiceScore(a))[0];
+}
 function speak(text){
   if(!canSpeak) return;
   try{
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-TW'; u.rate = 0.75;
-    const vs = speechSynthesis.getVoices();
-    const v = vs.find(v=>/zh[-_]TW/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang));
+    const v = pickVoice();
+    u.lang = v ? v.lang : 'zh-TW';
     if(v) u.voice = v;
+    u.rate = Number(store.get('voiceRate', 0.9)) || 0.9; u.pitch = 1;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
   }catch(e){}
 }
-if(canSpeak){ try{ speechSynthesis.getVoices(); }catch(e){} }
+if(canSpeak){ try{ speechSynthesis.getVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', ()=>{ if(typeof renderVoicePanel==='function') renderVoicePanel(); }); }catch(e){} }
 
 // ======== 老師錄音 ========
 let recWords = new Set(store.get('recWords',[]));
@@ -2470,6 +2504,25 @@ $('addBtn').addEventListener('click',()=>{
   renderMine();
 });
 $('onlyMine').addEventListener('change',e=>{ state.onlyMine=e.target.checked; store.set('onlyMine',state.onlyMine); });
+
+// ---- 聲音設定（家長區） ----
+function renderVoicePanel(){
+  const box = $('voicePanel'); if(!box) return;
+  if(!canSpeak){ box.innerHTML = '<p class="hint">這個瀏覽器不能朗讀。</p>'; return; }
+  const vs = zhVoices().sort((a,b)=>voiceScore(b)-voiceScore(a));
+  const cur = pickVoice();
+  const sel = $('voiceSel');
+  sel.innerHTML = vs.length ? vs.map(v=>`<option value="${esc(v.name)}"${cur&&cur.name===v.name?' selected':''}>${esc(v.name)}（${esc(v.lang)}）${voiceScore(v)>=140?' ★推薦':''}</option>`).join('') : '<option value="">找不到中文語音</option>';
+  $('voiceRate').value = store.get('voiceRate', 0.9);
+  $('voiceRateTxt').textContent = Number($('voiceRate').value).toFixed(2) + ' 倍';
+  const best = vs[0];
+  $('voiceTip').hidden = !!(best && voiceScore(best) >= 140);
+}
+$('voiceSel').addEventListener('change',()=>{ store.set('voiceName', $('voiceSel').value); speak('蝴蝶'); });
+$('voiceRate').addEventListener('input',()=>{ store.set('voiceRate', Number($('voiceRate').value)); $('voiceRateTxt').textContent = Number($('voiceRate').value).toFixed(2) + ' 倍'; });
+$('voiceTest').addEventListener('click',()=>speak('媽媽，我們一起去公園'));
+$('voiceAuto').addEventListener('click',()=>{ store.set('voiceName',''); store.set('voiceRate',0.9); renderVoicePanel(); speak('蝴蝶'); });
+$('parentBtn').addEventListener('click',()=>setTimeout(renderVoicePanel,50));
 
 // ======== 老師後台 ========
 let tKey = '';

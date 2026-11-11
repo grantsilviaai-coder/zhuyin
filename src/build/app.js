@@ -149,18 +149,41 @@ async function sendLog(answers){
 
 // ======== 朗讀 ========
 const canSpeak = 'speechSynthesis' in window;
+// ---- 挑最自然的中文語音 ----
+// 台灣口音優先；同樣是台灣口音時，「增強版／高音質／自然／Neural／Google」這類比較像真人的聲音優先
+function zhVoices(){
+  try{ return speechSynthesis.getVoices().filter(v=>/^zh|^cmn|^yue/i.test(v.lang) || /Chinese|中文|國語|普通話|台灣|臺灣/i.test(v.name)); }catch(e){ return []; }
+}
+function voiceScore(v){
+  let s = 0;
+  if(/zh[-_]TW|zh[-_]Hant|cmn[-_]Hant[-_]TW/i.test(v.lang) || /台灣|臺灣|Taiwan/i.test(v.name)) s += 100;
+  else if(/zh[-_]CN|cmn|zh[-_]Hans/i.test(v.lang)) s += 30;
+  else if(/yue|zh[-_]HK/i.test(v.lang)) s += 5;
+  if(/Enhanced|Premium|增強|高音質|優化|Natural|自然|Neural|Online/i.test(v.name)) s += 40;
+  if(/Google/i.test(v.name)) s += 25;
+  if(/Mei-?Jia|美佳|HsiaoChen|曉臻|HsiaoYu|曉雨|YunJhe|雲哲|Hanhan|涵涵/i.test(v.name)) s += 10;
+  if(/Compact|Eloquence|eSpeak/i.test(v.name)) s -= 50;
+  if(v.localService === false) s += 5;
+  return s;
+}
+function pickVoice(){
+  const vs = zhVoices(); if(!vs.length) return null;
+  const chosen = store.get('voiceName', '');
+  if(chosen){ const v = vs.find(x=>x.name===chosen); if(v) return v; }
+  return vs.slice().sort((a,b)=>voiceScore(b)-voiceScore(a))[0];
+}
 function speak(text){
   if(!canSpeak) return;
   try{
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-TW'; u.rate = 0.75;
-    const vs = speechSynthesis.getVoices();
-    const v = vs.find(v=>/zh[-_]TW/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang));
+    const v = pickVoice();
+    u.lang = v ? v.lang : 'zh-TW';
     if(v) u.voice = v;
+    u.rate = Number(store.get('voiceRate', 0.9)) || 0.9; u.pitch = 1;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
   }catch(e){}
 }
-if(canSpeak){ try{ speechSynthesis.getVoices(); }catch(e){} }
+if(canSpeak){ try{ speechSynthesis.getVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', ()=>{ if(typeof renderVoicePanel==='function') renderVoicePanel(); }); }catch(e){} }
 
 // ======== 老師錄音 ========
 let recWords = new Set(store.get('recWords',[]));
@@ -531,6 +554,25 @@ $('addBtn').addEventListener('click',()=>{
   renderMine();
 });
 $('onlyMine').addEventListener('change',e=>{ state.onlyMine=e.target.checked; store.set('onlyMine',state.onlyMine); });
+
+// ---- 聲音設定（家長區） ----
+function renderVoicePanel(){
+  const box = $('voicePanel'); if(!box) return;
+  if(!canSpeak){ box.innerHTML = '<p class="hint">這個瀏覽器不能朗讀。</p>'; return; }
+  const vs = zhVoices().sort((a,b)=>voiceScore(b)-voiceScore(a));
+  const cur = pickVoice();
+  const sel = $('voiceSel');
+  sel.innerHTML = vs.length ? vs.map(v=>`<option value="${esc(v.name)}"${cur&&cur.name===v.name?' selected':''}>${esc(v.name)}（${esc(v.lang)}）${voiceScore(v)>=140?' ★推薦':''}</option>`).join('') : '<option value="">找不到中文語音</option>';
+  $('voiceRate').value = store.get('voiceRate', 0.9);
+  $('voiceRateTxt').textContent = Number($('voiceRate').value).toFixed(2) + ' 倍';
+  const best = vs[0];
+  $('voiceTip').hidden = !!(best && voiceScore(best) >= 140);
+}
+$('voiceSel').addEventListener('change',()=>{ store.set('voiceName', $('voiceSel').value); speak('蝴蝶'); });
+$('voiceRate').addEventListener('input',()=>{ store.set('voiceRate', Number($('voiceRate').value)); $('voiceRateTxt').textContent = Number($('voiceRate').value).toFixed(2) + ' 倍'; });
+$('voiceTest').addEventListener('click',()=>speak('媽媽，我們一起去公園'));
+$('voiceAuto').addEventListener('click',()=>{ store.set('voiceName',''); store.set('voiceRate',0.9); renderVoicePanel(); speak('蝴蝶'); });
+$('parentBtn').addEventListener('click',()=>setTimeout(renderVoicePanel,50));
 
 // ======== 老師後台 ========
 let tKey = '';

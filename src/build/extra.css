@@ -168,3 +168,6 @@ b.up{color:var(--good)} b.down{color:var(--bad)}
 .cls-chip{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:6px 16px;font-size:17px;font-weight:700}
 .cls-chip:hover{background:var(--accent-soft)}
 .cls-chip.on{background:var(--ink);color:#fff}
+
+.voice-sel{font-size:18px;padding:8px 10px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);font-family:var(--font-body);max-width:100%}
+#voiceRate{width:100%;max-width:360px}
